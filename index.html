@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#D4C5B0" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" href="icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="icon.svg" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="鞠式工作台" />
+<title>笑笑养成记 · 工作台</title>
+<!-- ✅ 无任何外部网络依赖（离线 APK 可直接使用，首屏零外链请求）
+     1) 已移除 Google Fonts 外链：字体统一走 :root 里的
+        --font-zh / --font-en / --font-num 系统字体栈——
+        中文标题 "Noto Serif SC", serif；正文 -apple-system / PingFang SC / Microsoft YaHei。
+        用户在「美化设置 → 导入字体」里主动导入的字体不受影响（按需加载，非首屏依赖）。
+     2) 所有 css/ 与 js/ 均为本地相对路径，整个目录一起上传/打包即可。 -->
+<!-- ============================================================
+     样式与脚本已按【原文件顺序】拆分为多文件（2026-09-05 重构）：
+       css/  15 个样式分片（01→15 顺序引入，层叠顺序与原单文件完全一致）
+       js/   18 个脚本分片（01→18 顺序引入，共享全局作用域，非 ES module）
+     为什么要「按原顺序」而不是按功能重排：CSS 层叠与 JS 执行都依赖先后次序，
+     重排会静默改变优先级、造成难以定位的回退。详见 README.md「拆分原则」。
+     单文件版本备份见 .codebuddy/artifact/index.html.bak
+     ============================================================ -->
+<!-- ① 全局变量 / Design Tokens（8pt 网格 + 排版 + 主题材质纹理） -->
+<link rel="stylesheet" href="css/01-tokens.css" />
+<!-- ② 通用组件 / 工具类 + ③ 主题 + ④ 材质 + ⑤ 音乐播放器基础 + ⑥ 动画 -->
+<link rel="stylesheet" href="css/02-core.css" />
+<!-- 材质系统（平面/清透/玻璃）+ 纹理层 + 毛玻璃总开关 + 排版统一 -->
+<link rel="stylesheet" href="css/03-material.css" />
+<!-- 心情日记 / 心情日历 / 番茄钟 / 呼吸放松 / 灵感册 / 今日灵感 / 海水变蓝 / 生理期 -->
+<link rel="stylesheet" href="css/04-modules-life.css" />
+<!-- 首页编辑模式（拖拽排序） -->
+<link rel="stylesheet" href="css/05-home-edit.css" />
+<!-- 三个核心专栏增强样式 -->
+<link rel="stylesheet" href="css/06-columns.css" />
+<!-- 4 格预览图 + 首页栏目配图（黑白明信片缩略图） -->
+<link rel="stylesheet" href="css/07-preview-4.css" />
+<!-- 清音听雨阁 · 音乐播放器 -->
+<link rel="stylesheet" href="css/08-music-player.css" />
+<!-- 记账本（金玉收支账）+ 侧边栏分组导航 + 智能研习社 + 快速操作 sheet -->
+<link rel="stylesheet" href="css/09-ledger.css" />
+<!-- 我的页：名片 SVG 环形进度 / 状态卡 / 数据看板 / 成就墙 / 全功能入口 / 全部栏目 -->
+<link rel="stylesheet" href="css/10-profile.css" />
+<!-- 统一组件节奏（间距 / 长度 / 舒适感）+ ins 日记毛玻璃手账卡 -->
+<link rel="stylesheet" href="css/11-components.css" />
+<!-- 移动端底部 tab / 可安装引导条 / 过渡动画 / 骨架屏 / 早安复盘弹窗 / Phase C 组件 / A1 按钮 / 视频小窗 -->
+<link rel="stylesheet" href="css/12-mobile-tabs.css" />
+<!-- 空灵风音乐播放器装饰层 + ins 杂志手账 + 减弱动效兜底 -->
+<link rel="stylesheet" href="css/13-music-decor.css" />
+<!-- 各组件补丁块：文排刮擦 / MD 美化 / Neo 状态栏 / 简约状态栏 / 归档 / 播放器 / 体验增强 / 美学精修 1-3 -->
+<link rel="stylesheet" href="css/14-patches.css" />
+<!-- ⚠️ 以下 4 个 style 是 JS 运行时写入的容器，必须留在 HTML 内，不能外置成文件：
+     #card-style        → applyCardStyle() 写入的卡片自定义样式
+     #user-style        → applyUserStyle() 写入的用户自定义 CSS（美化设置里的「自定义 CSS」）
+     #app-font          → 用户导入的字体
+     #local-font-face   → 本地字体的 @font-face 声明
+     外置后 JS 就拿不到这个 <style> 节点，会直接写不进去。 -->
+<style id="card-style"></style>
+<style id="user-style">/* =========================================================
+   工作台 · 精致毛玻璃美化（暖灰 · 衬线 · 玻璃拟态）
+   兼容原生主题/材质系统：卡片 selectors 加 html[data-theme="minimal"] .app 前缀
+   以压过主题引擎硬编码的深色边框；玻璃透明度/模糊由材质引擎内联变量驱动
+   ========================================================= */
+
+/* 0. 变量（用户清单，放 :root 以符合规范；
+       主题相关项在下方 [data-theme] 块用 !important 覆盖引擎/材质内联值） */
+:root{
+  --radius:16px;
+  --blur:18px;
+  --glass-bg:rgba(255,255,255,0.12);          /* 浅色底上半透白玻璃；minimal 下由材质引擎内联 0.35 实际生效 */
+  --glass-border:rgba(255,255,255,0.22);
+  --shadow-sm:0 2px 8px rgba(0,0,0,0.05);
+  --shadow-md:0 4px 18px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.5);
+  --shadow-lg:0 12px 36px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.6);
+  --primary:#C9A98C;
+  --accent:#E3C4C8;
+  --ink:#1a1a1a;
+  --text:#4a4a4a;
+  --gray:#8a8a8a;
+}
+/* 主题级覆盖：必须 !important 才能压过主题引擎的 [data-theme] 块 + 材质内联变量 */
+html[data-theme="minimal"]{
+  --bg:linear-gradient(135deg,#efe9e2 0%,#e8e0d6 50%,#f0e8de 100%) !important;
+  --glass-border:rgba(255,255,255,0.30) !important;
+  --primary:#C9A98C !important;
+  --accent:#E3C4C8 !important;
+  --ink:#1a1a1a !important;
+  --text:#4a4a4a !important;
+  --gray:#8a8a8a !important;
+  --shadow-sm:0 2px 8px rgba(0,0,0,0.05) !important;
+  --shadow-md:0 4px 18px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.5) !important;
+  --shadow-lg:0 12px 36px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.6) !important;
+}
+/* 全局暖灰渐变底，给玻璃可折射的暖色底色 */
+body{ background:linear-gradient(135deg,#efe9e2 0%,#e8e0d6 50%,#f0e8de 100%) !important; }
+
+/* 1. 标题衬线化 */
+.mod-h1, .card h3, .home-h1, .hg-hi{
+  font-family:'Playfair Display','Noto Serif SC',serif !important;
+  letter-spacing:0.5px !important;
+  font-weight:600 !important;
+  color:var(--ink) !important;
+}
+/* 正文舒适行高与字重（系统无衬线正文 + 衬线标题的编辑式对比） */
+body, p, li, .mini-note, .sub, .tag, input, button{
+  line-height:1.75 !important;
+  font-weight:350 !important;
+  letter-spacing:0.2px !important;
+  color:var(--text) !important;
+}
+
+/* 2. 卡片统一毛玻璃（提权覆盖引擎深色边框，改用暖白玻璃边） */
+html[data-theme="minimal"] .app .card,
+html[data-theme="minimal"] .app .bento-card,
+html[data-theme="minimal"] .app .today-ov,
+html[data-theme="minimal"] .app .profile-card,
+html[data-theme="minimal"] .app .dash-card,
+html[data-theme="minimal"] .app .daily-pick,
+html[data-theme="minimal"] .app .heart-card,
+html[data-theme="minimal"] .app .quote-bar,
+html[data-theme="minimal"] .app .stats .st,
+html[data-theme="minimal"] .app .skill-card,
+html[data-theme="minimal"] .app .feed-card,
+html[data-theme="minimal"] .app .qa-item,
+html[data-theme="minimal"] .app .mood-card,
+html[data-theme="minimal"] .app .focus-card,
+html[data-theme="minimal"] .app .streak-hero,
+html[data-theme="minimal"] .app .ticket,
+html[data-theme="minimal"] .app .action-zone,
+html[data-theme="minimal"] .app .home-hero,
+html[data-theme="minimal"] .app .banner{
+  background:var(--glass-bg) !important;
+  backdrop-filter:blur(var(--blur)) saturate(1.1) !important;
+  -webkit-backdrop-filter:blur(var(--blur)) saturate(1.1) !important;
+  border:0.5px solid var(--glass-border) !important;
+  box-shadow:var(--shadow-md) !important;
+  border-radius:var(--radius) !important;
+  padding:18px 20px !important;
+  transition:transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+}
+/* 悬浮提升 */
+.card:hover, .bento-card:hover, .today-ov:hover, .profile-card:hover{
+  transform:translateY(-3px) scale(1.01) !important;
+  box-shadow:var(--shadow-lg) !important;
+  border-color:rgba(255,255,255,0.7) !important;
+}
+.card:active, .bento-card:active{ transform:scale(0.98) !important; }
+/* 卡片顶部高光反光条 */
+.card::before, .bento-card::before, .today-ov::before, .profile-card::before{
+  content:"" !important;
+  position:absolute !important;
+  top:0 !important; left:12px !important; right:12px !important;
+  height:1px !important;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent) !important;
+  opacity:0.6 !important;
+  pointer-events:none !important;
+}
+/* 主视觉卡片用大阴影 */
+html[data-theme="minimal"] .app .home-hero{ box-shadow:var(--shadow-lg) !important; }
+
+/* 3. chip 类组件也走玻璃（不受主题引擎争用，普通选择器即可） */
+.pill, .exp-chip, .mat-opt, .more-menu-item, .pin-row{
+  background:var(--glass-bg) !important;
+  backdrop-filter:blur(var(--blur)) !important;
+  -webkit-backdrop-filter:blur(var(--blur)) !important;
+  border:0.5px solid var(--glass-border) !important;
+  box-shadow:var(--shadow-md) !important;
+  border-radius:var(--radius-m) !important;
+  padding:8px 14px !important;
+}
+
+/* 4. 按钮统一毛玻璃 */
+button, .btn, .feed-play, .save, .cancel, .add-btn, .btn-ghost{
+  border-radius:var(--radius-m) !important;
+  background:rgba(255,255,255,0.15) !important;
+  backdrop-filter:blur(4px) !important;
+  -webkit-backdrop-filter:blur(4px) !important;
+  border:0.5px solid var(--glass-border) !important;
+  color:var(--ink) !important;
+  box-shadow:0 2px 8px rgba(0,0,0,0.04) !important;
+  padding:8px 16px !important;
+  transition:all 0.2s ease !important;
+}
+button:hover, .btn:hover, .feed-play:hover{
+  background:rgba(255,255,255,0.25) !important;
+  box-shadow:var(--shadow-soft) !important;
+}
+button:active, .btn:active{ transform:scale(0.96) !important; }
+/* 主操作按钮保留暖驼渐变 */
+.save, .btn-primary, .feed-play.primary, .feed-play{
+  background:linear-gradient(135deg,var(--primary),var(--accent)) !important;
+  color:#fff !important;
+  border-color:transparent !important;
+  box-shadow:0 2px 6px rgba(180,160,140,0.18) !important;
+}
+.save:hover, .feed-play:hover{ filter:brightness(1.05); }
+
+/* 5. 输入框 */
+input, select, textarea{
+  border-radius:var(--radius-m) !important;
+  border:0.5px solid var(--glass-border) !important;
+  background:rgba(255,255,255,0.08) !important;
+  padding:10px 14px !important;
+  color:var(--ink) !important;
+  font-family:inherit !important;
+  transition:border-color 0.2s, box-shadow 0.2s !important;
+}
+input:focus, select:focus, textarea:focus{
+  border-color:var(--accent) !important;   /* 规范里的 --accent-ink 为笔误，此处用 --accent */
+  box-shadow:0 0 0 3px rgba(0,0,0,0.05) !important;
+  outline:none !important;
+}
+
+/* 6. 标签/徽章 */
+.tag, .pill, .chip{
+  border-radius:999px !important;
+  background:rgba(0,0,0,0.04) !important;
+  border:0.5px solid rgba(0,0,0,0.06) !important;
+  padding:4px 12px !important;
+  font-size:12px !important;
+  color:var(--gray) !important;
+}
+
+/* 7. 进度条 */
+.prog-bar, .goal-bar, .storage-bar{
+  height:6px !important; border-radius:6px !important;
+  background:var(--glass-border) !important;
+}
+.prog-bar i, .goal-bar-fill, .storage-fill{
+  background:linear-gradient(90deg,var(--primary),var(--accent)) !important;
+  border-radius:6px !important;
+}
+/* 8. 环形进度发光 */
+.ring-circle{ filter:drop-shadow(0 0 4px var(--accent)) !important; }
+
+/* 9. 首页问候语（flex 布局 + 头像圈） */
+.home-greet{
+  display:flex; align-items:center; gap:14px; margin-bottom:16px;
+}
+.home-greet .hg-avatar{
+  width:48px; height:48px; border-radius:50%;
+  background:linear-gradient(135deg,var(--primary),var(--accent));
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; color:#fff; flex-shrink:0;
+}
+.home-greet .hg-tx{ flex:1; }
+.home-greet .hg-hi{ font-size:26px !important; font-weight:450 !important; color:var(--ink) !important; }
+.home-greet .hg-sub{ display:flex; align-items:center; gap:8px; font-size:14px !important; color:var(--gray) !important; }
+.home-greet .hg-clock{ font-family:'JetBrains Mono', monospace !important; font-weight:400 !important; }
+.home-greet .hg-ic{ display:none !important; }
+
+/* 10. 背景氛围光晕（暖色径向，覆盖 minimal 主题引擎的 opacity:0） */
+html[data-theme="minimal"] body::before{
+  content:"" !important;
+  position:fixed !important;
+  inset:0 !important;
+  z-index:-1 !important;
+  pointer-events:none !important;
+  background:
+    radial-gradient(48% 42% at 16% 14%, rgba(201,169,140,0.15), transparent 70%),
+    radial-gradient(52% 44% at 86% 16%, rgba(227,196,200,0.12), transparent 70%),
+    radial-gradient(56% 46% at 72% 82%, rgba(201,169,140,0.10), transparent 70%) !important;
+  opacity:0.5 !important;
+  transition:opacity 0.4s !important;
+}
+
+/* 11. 响应式适配 */
+@media (max-width:980px){
+  .card, .bento-card, .today-ov, .profile-card{ padding:14px 16px !important; border-radius:var(--radius) !important; }
+  .mod-h1{ font-size:20px !important; }
+  .home-greet .hg-hi{ font-size:22px !important; }
+  .home-greet .hg-clock{ font-size:16px !important; }
+}
+</style>
+<style id="app-font"></style>
+  <style id="local-font-face"></style>
+
+</head>
+<body>
+<div class="app">
+  <div id="bg-layer"></div>
+  <div class="halos"><span class="halo h1"></span><span class="halo h2"></span></div>
+  <div class="topbar" id="topbar">
+    <div class="title" id="topTitle">笑笑养成记工作台<small>像笑笑一样闪闪发光</small></div>
+    <div class="top-actions">
+      <button class="top-act" id="themeToggle" onclick="toggleThemeQuick()" aria-label="切换明暗"><svg class="svg-ic" viewBox="0 0 24 24" width="20" height="20"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+      <button class="top-act" onclick="openGlobalSearch()" aria-label="搜索"><svg class="svg-ic" viewBox="0 0 24 24" width="20" height="20"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg></button>
+      <button class="top-act" onclick="toggleQuickActions()" aria-label="快速操作"><svg class="svg-ic" viewBox="0 0 24 24" width="20" height="20"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg></button>
+    </div>
+  </div>
+
+  <div class="view active" id="view-home"></div>
+  <div class="view" id="view-module"></div>
+  <div class="view" id="view-profile"></div>
+  <div class="view view-allcols" id="view-allcols"></div>
+
+  <nav class="bot-tab" id="botTab" role="navigation" aria-label="主导航">
+    <button class="bt-item" data-v="home" onclick="showHome()" aria-label="首页"><span class="bt-ic"><svg class="svg-ic" viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9"/></svg></span><span class="bt-lb">首页</span></button>
+    <button class="bt-item" data-v="study" onclick="showModule('schedule')" aria-label="学习"><span class="bt-ic"><svg class="svg-ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg></span><span class="bt-lb">学习</span></button>
+    <button class="bt-item" data-v="beauty" onclick="showModule('refinement')" aria-label="变美"><span class="bt-ic"><svg class="svg-ic" viewBox="0 0 24 24"><path d="M12 3l1.4 4.6L18 9l-4.6 1.4L12 15l-1.4-4.6L6 9l4.6-1.4z"/><path d="M18 15l.7 2.3L21 18l-2.3.7L18 21l-.7-2.3L15 18l2.3-.7z"/></svg></span><span class="bt-lb">变美</span></button>
+    <button class="bt-item" data-v="record" onclick="showModule('money')" aria-label="记录"><span class="bt-ic"><svg class="svg-ic" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><span class="bt-lb">记录</span></button>
+    <button class="bt-item" data-v="profile" onclick="showProfile()" aria-label="我的"><span class="bt-ic"><svg class="svg-ic" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><span class="bt-lb">我的</span></button>
+    <button class="bt-item" data-v="more" onclick="showAllColumns()" aria-label="全部栏目"><span class="bt-ic"><svg class="svg-ic" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span><span class="bt-lb">全部</span></button>
+  </nav>
+
+  <div class="install-hint" id="installHint" style="display:none">
+    <span class="ih-ic"><svg class="svg-ic" viewBox="0 0 24 24" width="16" height="16"><path d="M12 3.5v10.5M8 10l4 4 4-4M5 20h14"/></svg></span>
+    <span class="ih-tx">把「笑笑养成记」添加到主屏幕，像原生 App 一样随时打开</span>
+    <button class="ih-btn" onclick="installApp()">安装</button>
+    <button class="ih-x" onclick="dismissInstall()" aria-label="关闭"><svg class="svg-ic" viewBox="0 0 24 24" width="12" height="12"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+
+  <!-- 启动屏 Splash -->
+  <div class="splash-mask" id="splashMask">
+    <div class="splash-logo">笑笑养成记</div>
+    <div class="splash-slogan">今天也要像笑笑一样闪闪发光</div>
+    <div class="splash-dots"><span></span><span></span><span></span></div>
+  </div>
+
+  <div class="boot-mask" id="bootMask" onclick="if(event.target===this)closeBoot()">
+    <div class="boot-card" onclick="event.stopPropagation()">
+      <div class="bg" id="bootBg" onclick="pickImageToBg()">点击设置背景图</div>
+      <div class="boot-bg-paste">
+        <input id="bootBgPaste" type="text" placeholder="选不了图？粘贴图片链接/复制的图，点「贴」" />
+        <button onclick="(async()=>{var t=document.getElementById('bootBgPaste');await applyBgFromClipOrText(t?t.value:'');})()">贴</button>
+        <button onclick="(async()=>{await applyBgFromClipOrText('');})()">剪贴板</button>
+      </div>
+      <div class="boot-title-row">
+        <h1 id="bootTitle" onclick="editBootField('title')">今天也要像笑笑一样闪闪发光</h1>
+        <button class="boot-edit" title="编辑标题" onclick="editBootField('title')"><svg class="svg-ic" viewBox="0 0 24 24" width="14" height="14"><path d="M4 20h4L18 10l-4-4L4 16v4zM14 6l4 4"/></svg></button>
+      </div>
+      <div class="boot-quote">
+        <div class="zh" id="bootZh" onclick="editBootField('slogan')"></div>
+        <div class="en" id="bootEn"></div>
+        <button class="boot-edit boot-edit-q" title="编辑语录" onclick="editBootField('slogan')"><svg class="svg-ic" viewBox="0 0 24 24" width="13" height="13"><path d="M4 20h4L18 10l-4-4L4 16v4zM14 6l4 4"/></svg></button>
+      </div>
+      <button onclick="closeBoot()">开始新的一天</button>
+      <button class="switch-q" onclick="switchBootQuote()"><svg class="svg-ic" viewBox="0 0 24 24" width="14" height="14"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 5v6h-6"/></svg> 换一句语录</button>
+      <button class="boot-skip" onclick="closeBoot()">先跳过，进入工作台 ›</button>
+    </div>
+  </div>
+
+  <div class="modal-mask" id="modalMask" onclick="if(event.target===this)closeModal()">
+    <div class="modal" id="modalBox"></div>
+  </div>
+
+  <div class="modal-mask" id="coverMask" onclick="if(event.target===this)closeCover()">
+    <div class="modal" id="coverBox"></div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="mini-player" id="miniPlayer" onclick="showMusicPlayer()" style="display:none">
+    <div class="mp-prog" onclick="mpSeek(event)"><div class="mp-prog-fill" id="mpProg"></div></div>
+    <div class="mp-main">
+      <div class="mp-info"><span class="mp-title" id="mpTitle">清音听雨阁</span><span class="mp-sub" id="mpSub">导入音乐即可播放</span></div>
+      <div class="mp-ctrl">
+        <button onclick="event.stopPropagation();mpPrev()" aria-label="上一首"><svg class="svg-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6 L8 12 L14 18 Z"/><rect x="4" y="6" width="2" height="12" rx="1"/></svg></button>
+        <button class="mp-play" id="mpPlayBtn" onclick="event.stopPropagation();mpToggle()" aria-label="播放/暂停"><svg class="svg-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4.5l13 7.5-13 7.5z"/></svg></button>
+        <button onclick="event.stopPropagation();mpNext()" aria-label="下一首"><svg class="svg-ic" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6 L16 12 L10 18 Z"/><rect x="18" y="6" width="2" height="12" rx="1"/></svg></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 全局：底部操作菜单 Action Sheet（组件四） -->
+<div class="action-sheet-mask" id="actionSheetMask">
+  <div class="action-sheet" id="actionSheet">
+    <div class="action-sheet-grip"></div>
+    <div class="action-sheet-title" id="actionTitle">选择操作</div>
+    <div class="action-sheet-options" id="actionOptions"></div>
+    <button class="action-sheet-cancel" onclick="hideActionSheet()">取消</button>
+  </div>
+</div>
+
+<!-- 全局 B站/视频 小窗播放器 -->
+<div id="floatVideo" class="float-video" style="display:none">
+  <div class="fv-head">
+    <span class="fv-title" id="floatVideoTitle">小窗播放</span>
+    <button onclick="closeFloatVideo()" aria-label="关闭">×</button>
+  </div>
+  <div class="fv-body" id="floatVideoBody"></div>
+</div>
+
+<!-- 常量数据 + 简约线条图标库 + 数据看板聚合 -->
+<script src="js/01-constants.js" charset="utf-8"></script>
+<!-- 妆点美意坊默认 CSS / 字体预设 / 全局 state / 备份与重置 -->
+<script src="js/02-state.js" charset="utf-8"></script>
+<!-- 工具函数 + 操作历史撤销栈 + 语音输入 + 图片外置存储 + 封面调整编辑器 -->
+<script src="js/03-utils.js" charset="utf-8"></script>
+<!-- 妆点美意坊（样式/背景/字体/存档）+ 全局背景纸 + 主题跟随系统/时间 -->
+<script src="js/04-decor.js" charset="utf-8"></script>
+<!-- 对比度工具 + 备份 + 开机 + 导航（一级/二级分组） -->
+<script src="js/05-boot.js" charset="utf-8"></script>
+<!-- 通用精致组件 JS（Phase C）+ 视图级监听器/网络请求统一回收 -->
+<script src="js/06-components.js" charset="utf-8"></script>
+<!-- 数据看板 + 首页 + 栏目配图 + 通用弹窗 + 番茄钟 + 呼吸放松 + 灵感册 -->
+<script src="js/07-home.js" charset="utf-8"></script>
+<!-- 「我的」个人主页：名片卡 + 数据看板 + 成就墙 + 全功能入口 -->
+<script src="js/08-profile.js" charset="utf-8"></script>
+<!-- 首页 Bento 看板 + 今日概览/心情/待办 + 模块渲染 + 板块拖拽 + 周月报 + 成就分享卡 -->
+<script src="js/09-modules.js" charset="utf-8"></script>
+<!-- 生理期记录（数据 + 概览 + 月历标记）+ 记账功能 + 预算总览/预警 -->
+<script src="js/10-period.js" charset="utf-8"></script>
+<!-- 智能研习社 + 艾宾浩斯复习曲线 + 知识库 -->
+<script src="js/11-study.js" charset="utf-8"></script>
+<!-- 表单弹窗 + 各栏目投喂记录 + 标签选择器 + 天气定位与城市选择 -->
+<script src="js/12-feed.js" charset="utf-8"></script>
+<!-- 心情日记模块 + 情绪趋势统计 + 小红书链接解析 -->
+<script src="js/13-diary.js" charset="utf-8"></script>
+<!-- B 站视频学习区 + 影音汇聚台（播放器单例 / 全屏横屏）+ 映画观览厅 -->
+<script src="js/14-video.js" charset="utf-8"></script>
+<!-- 启动流程 + 早安播报 / 每日复盘 / 连续打卡 / 昵称 / AI 总结 / 空闲调度 -->
+<script src="js/15-daily.js" charset="utf-8"></script>
+<!-- 清音听雨阁 + 内置轻音乐与白噪音（WebAudio 合成）+ 播放页暗色黑胶皮肤 -->
+<script src="js/16-music-core.js" charset="utf-8"></script>
+<!-- 音乐小 App：整页沉浸主页 + 装修面板 + 头像名片 + 心愿歌单 + 播放控制 -->
+<script src="js/17-music-app.js" charset="utf-8"></script>
+<!-- Censy Dynamic Island V4 (Jelly Glass Edition) · 已适配本项目的清音听雨阁音乐模块 -->
+<!-- 适配点：音频实例共用 window.musicAudio；数据源 musicTracks；控制调 musicToggle/Next/Prev/Like/Switch；双人头像用当前封面；主题随 html[data-theme]；永生协议只存位置/展开态 -->
+<template id="censy-island-tpl-v4">
+<!-- 尾部补丁 + wb-polish-v1（大屏适配 / 卡片入场 / 主题过渡等） -->
+<link rel="stylesheet" href="css/15-tail.css" />
+<div class="cen-v4-drag-layer" id="censy-island-drag-v4">
+<div class="Cmtt-v4-visual" id="censy-island-visual-v4">
+<div class="Tt-v4-header" id="cen-v4-handle">
+<div class="mini-v4-eq" id="cen-v4-eq">
+<div class="mini-v4-bar"></div><div class="mini-v4-bar"></div><div class="mini-v4-bar"></div><div class="mini-v4-bar"></div>
+</div>
+<div class="Tt-v4-drag-line" id="cen-v4-line"></div>
+</div>
+<div class="Mg-v4-avatars">
+<div class="Sx-v4-wire"></div>
+<div class="Z_CONFIG-v4-avatar left" id="cen-v4-avL"></div>
+<div class="Z_CONFIG-v4-avatar right" id="cen-v4-avR"></div>
+</div>
+<div class="cen-v4-playlist-box" id="cen-v4-playlist-container"></div>
+<div class="cen-v4-control-hub">
+<div class="Ks-v4-info">
+<div class="Ks-v4-title" id="cen-v4-title">未播放</div>
+<div class="Ks-v4-artist" id="cen-v4-artist">清音听雨阁</div>
+</div>
+<div class="Ks-v4-row">
+<button class="cen-v4-btn" id="cen-v4-btn-loop" title="循环模式">
+<svg viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></svg>
+</button>
+<button class="cen-v4-btn" id="cen-v4-btn-prev" title="上一首">
+<svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+</button>
+<button class="cen-v4-btn cen-v4-play-core" id="cen-v4-btn-play" title="播放/暂停">
+<svg id="cen-v4-icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+<svg id="cen-v4-icon-pause" viewBox="0 0 24 24" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+</button>
+<button class="cen-v4-btn" id="cen-v4-btn-next" title="下一首">
+<svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+</button>
+<button class="cen-v4-btn cen-v4-btn-list" id="cen-v4-btn-list" title="列表">
+<svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+</button>
+<button class="cen-v4-btn cen-v4-btn-like" id="cen-v4-btn-like" title="收藏">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+</button>
+</div>
+<div class="cen-v4-watermark">DESIGN BY CENSY · 清音听雨阁</div>
+</div>
+</div>
+</div>
+</template>
+<!-- 尾部脚本：灵动岛交互 + 收尾初始化 -->
+<script src="js/18-tail.js" charset="utf-8"></script>
+
+</body>
+</html>

@@ -1,40 +1,67 @@
-# ============================================================
-#  GitHub Actions · 一键把本项目打包成 Android APK
-#  用法：
-#    1. 把这个文件随项目一起 push / 上传到 GitHub
-#    2. 仓库 → Actions → 左侧 "Build Android APK" → Run workflow
-#    3. 跑完后 → Artifacts → 下载 xiaoxiao-apk（里面是 .apk）
-#  说明：
-#    - 本项目是「平铺结构」，index.html 在仓库根目录，所以 build-folder-path 用 "."
-#    - 该 action 直接用仓库里的 HTML/CSS/JS 打一个 WebView 壳 APK，
-#      无需先部署到 GitHub Pages、无需外部 URL。
-#    - 产出的是 debug 签名 APK，可直接安装测试；要上架 Play Store 需自备签名（见 README）。
-# ============================================================
-name: Build Android APK
+name: 打包网页为APK
 
 on:
-  workflow_dispatch:        # 允许在 Actions 页面手动触发
   push:
-    branches: [main, master]
+    branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: 检出代码
+      - name: 拉取代码
         uses: actions/checkout@v4
 
-      - name: 打包 APK（WebView 壳，直接吃仓库静态文件）
-        uses: liuhuapiaoyuan/web-to-app-action@main
+      - name: 安装JDK
+        uses: actions/setup-java@v4
         with:
-          build-folder-path: "."      # 平铺结构：index.html 在根目录
-          app-name: "笑笑养成记"   # 应用显示名（手机上看到的应用标题）；若构建报名字相关错误，可临时改回英文 "XiaoXiao"
-          output-folder-path: "apk"
+          java-version: '17'
+          distribution: 'temurin'
 
-      - name: 上传 APK 产物
-        uses: actions/upload-artifact@v4
-        if: always()
+      - name: 安装Node.js
+        uses: actions/setup-node@v4
         with:
-          name: xiaoxiao-apk
-          path: apk/*.apk
-          if-no-files-found: warn
+          node-version: '18'
+
+      - name: 安装打包工具
+        run: npm install -g cordova
+
+      - name: 创建安卓壳子
+        # 应用显示名用「笑笑养成记」；包名 com.xiaoxiao.workbench 可自行改成你的
+        run: cordova create app com.xiaoxiao.workbench "笑笑养成记"
+
+      - name: 设置自定义图标
+        run: |
+          cd app
+          if [ -f ../icon.png ]; then
+            cp ../icon-512.png icon.png
+            sed -i '/<\/widget>/i \ \ <icon src="icon.png" />' config.xml
+            echo "✅ 已使用 icon.png 作为图标"
+          else
+            echo "⚠️ 未找到 icon.png，使用默认图标"
+          fi
+
+      - name: 复制网页文件到壳子
+        run: |
+          cd app
+          rm -rf www/*
+          rsync -av --exclude='app' --exclude='.git' --exclude='.github' --exclude='*.zip' --exclude='archive' ../ www/
+          echo "✅ 检查 index.html 是否存在："
+          ls www/
+
+      - name: 添加安卓平台
+        run: |
+          cd app
+          cordova platform add android
+
+      - name: 构建APK
+        run: |
+          cd app
+          cordova build android
+
+      - name: 上传APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: 笑笑养成记-安装包
+          path: app/platforms/android/app/build/outputs/apk/debug/*.apk

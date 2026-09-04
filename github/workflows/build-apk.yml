@@ -16,7 +16,7 @@ jobs:
         uses: liuhuapiaoyuan/web-to-app-action@main
         with:
           build-folder-path: "."      # 平铺结构：index.html 在根目录
-          app-name: "XiaoXiao"
+          app-name: "笑笑养成记"
           output-folder-path: "apk"
 
       - name: 上传 APK 产物

@@ -1,0 +1,28 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:        # 允许在 Actions 页面手动触发
+  push:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 打包 APK（WebView 壳，直接吃仓库静态文件）
+        uses: liuhuapiaoyuan/web-to-app-action@main
+        with:
+          build-folder-path: "."      # 平铺结构：index.html 在根目录
+          app-name: "XiaoXiao"
+          output-folder-path: "apk"
+
+      - name: 上传 APK 产物
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: xiaoxiao-apk
+          path: apk/*.apk
+          if-no-files-found: warn

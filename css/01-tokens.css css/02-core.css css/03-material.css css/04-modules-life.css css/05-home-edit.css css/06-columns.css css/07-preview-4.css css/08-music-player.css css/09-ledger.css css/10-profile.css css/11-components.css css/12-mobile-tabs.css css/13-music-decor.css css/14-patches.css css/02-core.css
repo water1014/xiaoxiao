@@ -1,0 +1,906 @@
+@charset "UTF-8";
+/* ============================================================
+   笑笑养成记 · 工作台 —— 样式分片 02/15
+   文件：css/02-core.css
+   来源：原 index.html 第 131–1025 行
+   内容：② 通用组件 / 工具类 + ③ 主题 + ④ 材质 + ⑤ 音乐播放器基础 + ⑥ 动画
+   ------------------------------------------------------------
+   ⚠️ 分片按【原文件顺序】物理切分，层叠顺序与原来的单文件完全一致。
+      修改样式请就地编辑对应分片；不要跨分片调整引入顺序，
+      否则会改变 CSS 层叠优先级，造成难以定位的样式回退。
+   ============================================================ */
+/* ② 通用组件 / 工具类（卡片、按钮、输入、列表、数字等宽等） */
+/* a11y：纯图标按钮（无可见文字）须补 aria-label，如 <button aria-label="播放/暂停">；图标 svg 加 aria-hidden="true"。 */
+.dnum,.hsb-time,.rt-time,.to-val,.zero-favor-value,.mood-badge,.c-clock, .np-info .now-title,.lz-track-title,.lz-li-no,.lz-li-dur,.mCurT,.mDurT, .hs-clock,.date-num,.st-num,.ach-num,.goal-num, /* #11 扩展：金额/统计/进度/计数器/时间等所有纯数字展示 */ .mb-item-amt,.bc-val,.sc-val,.ring-number,.ring-center span,.stat-num, .month-num,.day-num,.count-num,.km-num,.timer-num,.focus-num,.pomo-num, .toast,.ach-prog span,.cb-num,.hn-num,.streak-num,.badge-num, [data-num],.num{
+  font-family:var(--num-font)!important;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:0;
+}
+/* ===== Design Tokens (8pt grid + Typography) =====
+       核心规则（来自设计规范 prompt 模板）：
+       1) 8pt grid: 间距/尺寸以 8 的倍数为基准；如需更细，可走 4 的倍数（--s-* 的 s-1=4 例外）。
+       2) Typography tokens: 禁止任意新增字号；优先复用下表 6 档。
+       3) Line-height: 正文 1.6，大标题 1.2，小标题 1.4。
+       4) 优先复用 :root token，所有硬编码 px 都应替换为 var(--s-*) / var(--fs-*) / var(--lh-*)。 */
+/* 【修复 #1】此处原本缺失 `:root{` 开启括号，导致下方 25 个 Design Token
+     （--s-* / --fs-* / --lh-* / --radius-* / --letter-* / --bg-mat*）变成样式表顶层的
+     非法声明，被浏览器整体丢弃；并在原第 96 行留下一个孤儿 `}`。
+     现补回开启括号，使这批声明与既有闭合括号重新配对、token 恢复生效。 */
+:root{
+  --s-1:4px;
+  --s-2:8px;
+  --s-3:12px;
+  --s-4:16px;
+  --s-5:20px;
+  --s-6:24px;
+  --s-7:32px;
+  --s-8:40px;
+  --s-9:48px;
+  --fs-caption:12px;
+  --fs-body-sm:14px;
+  --fs-body:16px;
+  --fs-h3:20px;
+  --fs-h2:24px;
+  --fs-h1:32px;
+  --lh-body:1.6;
+  --lh-title:1.2;
+  --lh-subtitle:1.4;
+  --radius-s:8px;
+  --radius-m:12px;
+  --radius-l:16px;
+  /* 圆角也走 token */
+  --letter-tight:0.5px;
+  --letter-wide:1px;
+  /* 字距 2 档 */
+  /* 主题材质纹理（默认：亚麻+颗粒，铺满全界面，压在纯色与背景图上） */
+  --bg-mat:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxODAnIGhlaWdodD0nMTgwJz48ZmlsdGVyIGlkPSdnJz48ZmVUdXJidWxlbmNlIHR5cGU9J2ZyYWN0YWxOb2lzZScgYmFzZUZyZXF1ZW5jeT0nMC44NScgbnVtT2N0YXZlcz0nMicgc3RpdGNoVGlsZXM9J3N0aXRjaCcvPjxmZUNvbG9yTWF0cml4IHR5cGU9J3NhdHVyYXRlJyB2YWx1ZXM9JzAnLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0nMTgwJyBoZWlnaHQ9JzE4MCcgZmlsdGVyPSd1cmwoI2cpJyBvcGFjaXR5PScwLjMwJy8+PGcgc3Ryb2tlPScjMDAwJyBzdHJva2Utb3BhY2l0eT0nMC4wMzUnIHN0cm9rZS13aWR0aD0nMC42Jz48cGF0aCBkPSdNMCAwTDE4MCAxODBNMTgwIDBMMCAxODAnLz48L2c+PC9zdmc+");
+  --bg-mat-blend:soft-light;
+}
+/* ③ 主题（Theme）—— 各配色方案复用同一套 token，仅覆盖色板与材质变量 */
+/* 主题：warm（暖） */
+[data-theme="warm"]{
+  --bg:#FBF6F0;
+  --primary:#E8C4C4;
+  --accent:#D4A8B0;
+  --glass-bg:rgba(255,255,255,0.55);
+  --glass-border:rgba(232,196,196,0.20);
+  --glass-solid:rgba(255,255,255,0.68);
+  --glass-flat:rgba(255,255,255,0.78);
+  --halo1:rgba(232,196,196,0.10);
+  --halo2:rgba(212,180,190,0.08);
+  --shadow:0 4px 20px rgba(180,150,160,0.08), inset 0 1px 0 rgba(255,255,255,0.6);
+  --action-bg:#F1E9E2;
+  --bg-mat:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxODAnIGhlaWdodD0nMTgwJz48ZmlsdGVyIGlkPSdnJz48ZmVUdXJidWxlbmNlIHR5cGU9J2ZyYWN0YWxOb2lzZScgYmFzZUZyZXF1ZW5jeT0nMC44NScgbnVtT2N0YXZlcz0nMicgc3RpdGNoVGlsZXM9J3N0aXRjaCcvPjxmZUNvbG9yTWF0cml4IHR5cGU9J3NhdHVyYXRlJyB2YWx1ZXM9JzAnLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0nMTgwJyBoZWlnaHQ9JzE4MCcgZmlsdGVyPSd1cmwoI2cpJyBvcGFjaXR5PScwLjMwJy8+PGcgc3Ryb2tlPScjMDAwJyBzdHJva2Utb3BhY2l0eT0nMC4wMzUnIHN0cm9rZS13aWR0aD0nMC42Jz48cGF0aCBkPSdNMCAwTDE4MCAxODBNMTgwIDBMMCAxODAnLz48L2c+PC9zdmc+");
+  --bg-mat-blend:soft-light;
+  --gray:#7A7065;
+  --accent-ink:#AC5767;
+  --primary-ink:#BA4F4F;
+  --danger-ink:#C0392B;
+  --warn-ink:#8A6100;
+  --ok-ink:#2E7D32;
+}
+[data-theme="minimal"]{
+  --bg:#FFFFFF!important;
+  --primary:#1A1A1A;
+  --accent:#9A9A9A;
+  --ink:#161616;
+  --text:#161616;
+  --gray:#767676;
+  --line:rgba(0,0,0,0.08);
+  --glass-bg:rgba(255,255,255,0.92);
+  --glass-border:rgba(0,0,0,0.07);
+  --glass-solid:rgba(255,255,255,0.96);
+  --glass-flat:rgba(255,255,255,0.98);
+  --blur:0px;
+  --halo1:transparent;
+  --halo2:transparent;
+  --shadow:0 1px 3px rgba(0,0,0,0.05);
+  --action-bg:#F5F5F5;
+  --bg-mat:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNicgaGVpZ2h0PScyNic+PGNpcmNsZSBjeD0nMycgY3k9JzMnIHI9JzEnIGZpbGw9JyMwMDAnIGZpbGwtb3BhY2l0eT0nMC4wMzUnLz48ZmlsdGVyIGlkPSdnJz48ZmVUdXJidWxlbmNlIHR5cGU9J2ZyYWN0YWxOb2lzZScgYmFzZUZyZXF1ZW5jeT0nMC45JyBudW1PY3RhdmVzPScyJyBzdGl0Y2hUaWxlcz0nc3RpdGNoJy8+PGZlQ29sb3JNYXRyaXggdHlwZT0nc2F0dXJhdGUnIHZhbHVlcz0nMCcvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPScyNicgaGVpZ2h0PScyNicgZmlsdGVyPSd1cmwoI2cpJyBvcGFjaXR5PScwLjEwJy8+PC9zdmc+");
+  --bg-mat-blend:soft-light;
+  --accent-ink:#767676;
+  --primary-ink:#1A1A1A;
+  --danger-ink:#C0392B;
+  --warn-ink:#8A6100;
+  --ok-ink:#2E7D32;
+}
+[data-theme="dark"]{
+  --bg:#1F1F1F!important;
+  --primary:#D4C5B0;
+  --accent:#C4B5A0;
+  --ink:#F2EFEC;
+  --text:#E8E4DE;
+  --gray:#9a9a9a;
+  --line:rgba(255,255,255,0.12);
+  --glass-bg:rgba(60,60,60,0.40);
+  --glass-border:rgba(255,255,255,0.10);
+  --glass-solid:rgba(60,60,60,0.55);
+  --glass-flat:rgba(40,40,40,0.70);
+  --halo1:rgba(212,197,176,0.10);
+  --halo2:rgba(196,181,160,0.08);
+  --shadow:0 4px 20px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.06);
+  --action-bg:#262626;
+  --bg-mat:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxNjAnIGhlaWdodD0nMTYwJz48ZmlsdGVyIGlkPSdnJz48ZmVUdXJidWxlbmNlIHR5cGU9J2ZyYWN0YWxOb2lzZScgYmFzZUZyZXF1ZW5jeT0nMC44JyBudW1PY3RhdmVzPScyJyBzdGl0Y2hUaWxlcz0nc3RpdGNoJy8+PGZlQ29sb3JNYXRyaXggdHlwZT0nc2F0dXJhdGUnIHZhbHVlcz0nMCcvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPScxNjAnIGhlaWdodD0nMTYwJyBmaWx0ZXI9J3VybCgjZyknIG9wYWNpdHk9JzAuNScvPjwvc3ZnPg==");
+  --bg-mat-blend:soft-light;
+  --accent-ink:#C4B5A0;
+  --primary-ink:#D4C5B0;
+  --danger-ink:#E57676;
+  --warn-ink:#FFB74D;
+  --ok-ink:#81C784;
+}
+/* ===== 主题：磨砂·潮湿雨季（极简黑白灰 / 雨夜曼哈顿 / 档案风）===== */
+[data-theme="frost"]{
+  --bg:#0B0B0C!important;
+  --primary:#FFFFFF;
+  --accent:#B5B5B5;
+  --ink:#F4F4F4;
+  --text:#E6E6E6;
+  --gray:#969696;
+  --line:rgba(255,255,255,0.12);
+  --glass-bg:rgba(255,255,255,0.07);
+  --glass-border:rgba(255,255,255,0.16);
+  --glass-solid:rgba(255,255,255,0.10);
+  --glass-flat:rgba(255,255,255,0.14);
+  --blur:12px;
+  --halo1:rgba(255,255,255,0.05);
+  --halo2:rgba(255,255,255,0.03);
+  --shadow:0 6px 28px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.07);
+  --action-bg:rgba(255,255,255,0.06);
+  color-scheme:dark;
+  --bg-mat:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxMjAnIGhlaWdodD0nMjQwJz48ZyBzdHJva2U9JyNmZmYnIHN0cm9rZS1vcGFjaXR5PScwLjA2JyBzdHJva2Utd2lkdGg9JzEuMic+PHBhdGggZD0nTTEyIDBMLTQgMjQwJy8+PHBhdGggZD0nTTQ0IDBMMjggMjQwJy8+PHBhdGggZD0nTTc2IDBMNjAgMjQwJy8+PHBhdGggZD0nTTEwOCAwTDkyIDI0MCcvPjwvZz48ZmlsdGVyIGlkPSdnJz48ZmVUdXJidWxlbmNlIHR5cGU9J2ZyYWN0YWxOb2lzZScgYmFzZUZyZXF1ZW5jeT0nMC45JyBudW1PY3RhdmVzPScyJyBzdGl0Y2hUaWxlcz0nc3RpdGNoJy8+PGZlQ29sb3JNYXRyaXggdHlwZT0nc2F0dXJhdGUnIHZhbHVlcz0nMCcvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPScxMjAnIGhlaWdodD0nMjQwJyBmaWx0ZXI9J3VybCgjZyknIG9wYWNpdHk9JzAuMicvPjwvc3ZnPg==");
+  --bg-mat-blend:overlay;
+  --accent-ink:#B5B5B5;
+  --primary-ink:#FFFFFF;
+  --danger-ink:#E57474;
+  --warn-ink:#FFB74D;
+  --ok-ink:#81C784;
+}
+/* ④ 材质系统（Material）—— 毛玻璃 / 磨砂 / 阴影 / 光晕，统一走 --glass-* / --blur */
+html[data-theme="frost"][data-material="glass"]{
+  --glass-bg:rgba(255,255,255,0.12);
+  --glass-border:rgba(255,255,255,0.22);
+}
+html[data-theme="frost"][data-material="clear"]{
+  --glass-border:rgba(255,255,255,0.5);
+}
+/* 磨砂卡片：强模糊、细白边、顶部高光 */
+html[data-theme="frost"] .card, html[data-theme="frost"] .home-hero, html[data-theme="frost"] .heart-card, html[data-theme="frost"] .banner, html[data-theme="frost"] .bento-card, html[data-theme="frost"] .profile-card, html[data-theme="frost"] .dash-card, html[data-theme="frost"] .daily-pick, html[data-theme="frost"] .goal-card, html[data-theme="frost"] .home-wx, html[data-theme="frost"] .today-ov, html[data-theme="frost"] .action-zone, html[data-theme="frost"] .quote-bar, html[data-theme="frost"] .feed-card, html[data-theme="frost"] .qa-item, html[data-theme="frost"] .mood-card, html[data-theme="frost"] .whisper-wall, html[data-theme="frost"] .focus-card, html[data-theme="frost"] .streak-hero, html[data-theme="frost"] .ticket{
+  background:rgba(255,255,255,0.07)!important;
+  border-color:rgba(255,255,255,0.16)!important;
+  box-shadow:0 8px 28px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08)!important;
+  color:var(--text);
+}
+/* 衬线标题 + 柔光 */
+html[data-theme="frost"] .mod-h1, html[data-theme="frost"] .card h3, html[data-theme="frost"] .home-h1, html[data-theme="frost"] .profile-h1, html[data-theme="frost"] .dash-h1{
+  font-family:"Noto Serif SC","Songti SC","STSong",serif!important;
+  letter-spacing:var(--letter-wide);
+  text-shadow:0 0 14px rgba(255,255,255,0.16);
+  font-weight:600;
+}
+/* 档案式英文小标签（模块头 / 卡片标题） */
+html[data-theme="frost"] .mod-head,html[data-material="glass"] .card:not(.ach-wall), html[data-material="glass"] .home-hero, html[data-material="glass"] .bento-card, html[data-material="glass"] .profile-card, html[data-material="glass"] .dash-card, html[data-material="glass"] .daily-pick, html[data-material="glass"] .goal-card,.boot-quote,.drop-target,.mod-sec,.mb-cat{
+  position:relative;
+}
+html[data-theme="frost"] .mod-head::before{
+  content:attr(data-en);
+  display:block;
+  font-family:"Courier New",monospace;
+  font-size:9px;
+  letter-spacing:6px;
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.42);
+  margin-bottom:5px;
+}
+html[data-theme="frost"] .card h3{
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  font-weight:600;
+}
+html[data-theme="frost"] .card h3[data-en]::before{
+  content:attr(data-en);
+  font-family:"Courier New",monospace;
+  font-size:8px;
+  letter-spacing:4px;
+  text-transform:uppercase;
+  color:rgba(255,255,255,0.34);
+  font-weight:400;
+  order:-1;
+}
+/* 虚线分隔（票据/档案感） */
+html[data-theme="frost"] .divider, html[data-theme="frost"] .ticket-div{
+  border-top:1px dashed rgba(255,255,255,0.18);
+}
+html[data-theme="frost"] .quote-bar{
+  border-left:2px solid rgba(255,255,255,0.35);
+}
+/* ===== 主题：新拟态（Neumorphism）=====
+     卡片与背景同色，靠双向柔光阴影做「浮雕 / 嵌入」立体感；压扁所有玻璃与描边。 */
+[data-theme="neu"]{
+  --bg:#E6EBF2!important;
+  --primary:#6B7A99;
+  --accent:#7C8DB0;
+  --ink:#4A5468;
+  --text:#4A5468;
+  --gray:#5F6B7D;
+  --line:rgba(74,84,104,0.10);
+  --glass-bg:#E6EBF2;
+  --glass-border:transparent;
+  --glass-solid:#E6EBF2;
+  --glass-flat:#E6EBF2;
+  --blur:0px;
+  --halo1:rgba(124,141,176,0.10);
+  --halo2:rgba(124,141,176,0.07);
+  --neu-light:#F4F7FB;
+  --neu-dark:#C2CBD9;
+  --neu-shadow:-8px -8px 16px var(--neu-light), 8px 8px 16px var(--neu-dark);
+  --neu-press:inset -5px -5px 10px var(--neu-light), inset 5px 5px 10px var(--neu-dark);
+  --neu-press-active:inset 5px 5px 10px var(--neu-light), inset -5px -5px 10px var(--neu-dark);
+  --action-bg:#DEE4EC;
+  --bg-mat:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxNjAnIGhlaWdodD0nMTYwJz48ZmlsdGVyIGlkPSdnJz48ZmVUdXJidWxlbmNlIHR5cGU9J2ZyYWN0YWxOb2lzZScgYmFzZUZyZXF1ZW5jeT0nMC45JyBudW1PY3RhdmVzPScyJyBzdGl0Y2hUaWxlcz0nc3RpdGNoJy8+PGZlQ29sb3JNYXRyaXggdHlwZT0nc2F0dXJhdGUnIHZhbHVlcz0nMCcvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPScxNjAnIGhlaWdodD0nMTYwJyBmaWx0ZXI9J3VybCgjZyknIG9wYWNpdHk9JzAuNCcvPjwvc3ZnPg==");
+  --bg-mat-blend:soft-light;
+  --accent-ink:#586A91;
+  --primary-ink:#5D6A87;
+  --danger-ink:#C0392B;
+  --warn-ink:#8A6100;
+  --ok-ink:#2D7931;
+}
+/* ⑤ 音乐播放器模块（Music Player）—— 迷你条 / 播放页 / 唱片 / 进度 */
+html[data-theme="neu"] .app .card, html[data-theme="neu"] .app .home-hero, html[data-theme="neu"] .app .heart-card, html[data-theme="neu"] .app .banner, html[data-theme="neu"] .app .bento-card, html[data-theme="neu"] .app .profile-card, html[data-theme="neu"] .app .dash-card, html[data-theme="neu"] .app .daily-pick, html[data-theme="neu"] .app .goal-card, html[data-theme="neu"] .app .home-wx, html[data-theme="neu"] .app .today-ov, html[data-theme="neu"] .app .action-zone, html[data-theme="neu"] .app .quote-bar, html[data-theme="neu"] .app .feed-card, html[data-theme="neu"] .app .qa-item, html[data-theme="neu"] .app .mood-card, html[data-theme="neu"] .app .whisper-wall, html[data-theme="neu"] .app .focus-card, html[data-theme="neu"] .app .streak-hero, html[data-theme="neu"] .app .ticket, html[data-theme="neu"] .app .skill-card, html[data-theme="neu"] .app .stats .st, html[data-theme="neu"] .app .grid .cell, html[data-theme="neu"] .app .more-grid .cell, html[data-theme="neu"] .app .pill, html[data-theme="neu"] .app .exp-chip, html[data-theme="neu"] .app .prog-row, html[data-theme="neu"] .app .check-item, html[data-theme="neu"] .app .mat-opt, html[data-theme="neu"] .app .more-menu-item, html[data-theme="neu"] .app .pc-quick .pc-qb, html[data-theme="neu"] .app .ach, html[data-theme="neu"] .app .mini-player{
+  background:var(--bg)!important;
+  border-color:transparent!important;
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  box-shadow:var(--neu-shadow)!important;
+  color:var(--text);
+}
+/* 新拟态：嵌入态（按钮 / 输入框 / 开关 / 卡片操作） */
+html[data-theme="neu"] .top-act, html[data-theme="neu"] button, html[data-theme="neu"] input, html[data-theme="neu"] select, html[data-theme="neu"] textarea, html[data-theme="neu"] .switch, html[data-theme="neu"] .chip, html[data-theme="neu"] .save, html[data-theme="neu"] .cancel, html[data-theme="neu"] .field input, html[data-theme="neu"] .field select{
+  background:var(--bg)!important;
+  border-color:transparent!important;
+  box-shadow:var(--neu-press)!important;
+  color:var(--ink);
+}
+html[data-theme="neu"] .top-act:active, html[data-theme="neu"] button:active, html[data-theme="neu"] .save:active, html[data-theme="neu"] .cancel:active{
+  box-shadow:var(--neu-press-active)!important;
+}
+html[data-theme="neu"] .mod-h1, html[data-theme="neu"] .card h3, html[data-theme="neu"] .home-h1,.music-item.on .mi-name,.ambient-sleep .as-label,.cell-more .lb{
+  color:var(--ink);
+  font-weight:600;
+}
+/* 新拟态：关闭彩色光晕，保持纯色浮雕表面 */
+html[data-theme="neu"] body::before,html[data-theme="neu"] .halos,html[data-theme="minimal"] body::before,html[data-theme="minimal"] .halos{
+  opacity:0;
+}
+/* ===== 主题：液态玻璃（Liquid Glass）=====
+     强模糊毛玻璃 + 折射高光 + 流动光泽，压在多彩极光背景上呈现「会动的玻璃」。 */
+[data-theme="liquid"]{
+  --bg:#0E0F1A!important;
+  --primary:#9FB4FF;
+  --accent:#7CE0FF;
+  --ink:#EAF0FF;
+  --text:#DCE4FF;
+  --gray:#8C95B9;
+  --line:rgba(255,255,255,0.14);
+  --glass-bg:rgba(255,255,255,0.08)!important;
+  --glass-border:rgba(255,255,255,0.22);
+  --glass-solid:rgba(255,255,255,0.12)!important;
+  --glass-flat:rgba(255,255,255,0.16)!important;
+  --blur:30px;
+  --halo1:rgba(159,180,255,0.18);
+  --halo2:rgba(124,224,255,0.13);
+  --shadow:0 8px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.20);
+  --action-bg:rgba(255,255,255,0.08);
+  color-scheme:dark;
+  --bg-mat:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxNjAnIGhlaWdodD0nMTYwJz48ZmlsdGVyIGlkPSdnJz48ZmVUdXJidWxlbmNlIHR5cGU9J2ZyYWN0YWxOb2lzZScgYmFzZUZyZXF1ZW5jeT0nMC44NScgbnVtT2N0YXZlcz0nMicgc3RpdGNoVGlsZXM9J3N0aXRjaCcvPjxmZUNvbG9yTWF0cml4IHR5cGU9J3NhdHVyYXRlJyB2YWx1ZXM9JzAnLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0nMTYwJyBoZWlnaHQ9JzE2MCcgZmlsdGVyPSd1cmwoI2cpJyBvcGFjaXR5PScwLjUnLz48L3N2Zz4=");
+  --bg-mat-blend:overlay;
+  --accent-ink:#7CE0FF;
+  --primary-ink:#9FB4FF;
+  --danger-ink:#E57474;
+  --warn-ink:#FFB74D;
+  --ok-ink:#81C784;
+}
+/* ⑤·b 音乐小 App · 整页沉浸式皮肤（.mp-app）
+   风格对齐参考图：整页暗色纹理底 + 曲目封面取色驱动背景。
+   主页 / 歌单列表 / 播放页 都用这个容器，三页视觉统一。
+   背景取色由 mpAppApplyColor() 在 renderMusic() 之后执行（canvas 提取封面主色）。 */
+.music-root.mp-app{
+  /* 默认背景：暖灰 → 暗色。脚本会用 inline 变量覆盖 */
+  --mp-bg-1:#1a1a1d; --mp-bg-2:#0d0d10; --mp-tint:rgba(0,0,0,.55);
+  --mp-fg:#EDEDF0; --mp-fg-soft:rgba(237,237,240,.62); --mp-fg-dim:rgba(237,237,240,.4);
+  --mp-card:rgba(255,255,255,.05); --mp-card-bd:rgba(255,255,255,.08);
+  --mp-divider:rgba(255,255,255,.10);
+  position:relative;
+  min-height:100vh;
+  color:var(--mp-fg);
+  background:linear-gradient(168deg,var(--mp-bg-1) 0%,var(--mp-bg-2) 100%);
+  overflow:hidden;
+}
+/* 背景五层：封面blur → 暗蒙版 → 丝绸斜纹 → 分形噪声 → 暗角(vignette)
+   质感来源：真实照片底的"织物/纸张颗粒"由 feTurbulence 分形噪声生成，
+   斜纹由极细 repeating-linear-gradient 模拟（密度 5px，视觉上接近丝绢反光）。 */
+.mp-app-bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.mp-app-bg-img{position:absolute;inset:-10%;background-size:cover;background-position:center;
+  filter:blur(60px) saturate(1.5) brightness(.5);opacity:0;
+  transition:opacity .8s var(--ease);transform:scale(1.08)}
+.mp-app-bg-tint{position:absolute;inset:0;background:
+  /* 顶部"灯光"光晕：像一盏暖灯从上方打下 */
+  radial-gradient(60% 34% at 50% -4%, rgba(255,255,255,.10), transparent 70%),
+  linear-gradient(180deg, rgba(0,0,0,.10) 0%, rgba(0,0,0,.62) 100%),
+  radial-gradient(85% 60% at 50% 6%, var(--mp-tint), transparent 72%);}
+/* 丝绸斜纹 + 分形噪声 + 暗角，三层合一（省一个 DOM 节点） */
+.mp-app-bg-grain{position:absolute;inset:0;
+  background-image:
+    /* ① 暗角：四角压暗，中心提亮，制造"聚光"纵深感 */
+    radial-gradient(120% 90% at 50% 35%, transparent 30%, rgba(0,0,0,.45) 100%),
+    /* ② 丝绸斜纹：两组不同角度的极细条纹交错，形成 moiré 质感 */
+    repeating-linear-gradient(118deg, rgba(255,255,255,.030) 0 1px, transparent 1px 5px),
+    repeating-linear-gradient(62deg, rgba(0,0,0,.026) 0 1px, transparent 1px 7px),
+    /* ③ 分形噪声（feTurbulence）：模拟真实相纸颗粒 */
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  background-size:100% 100%,100% 100%,100% 100%,220px 220px;
+  opacity:.5;mix-blend-mode:overlay}
+/* mp-page 要脱离正常页面的 padding 限制 */
+.music-root.mp-app .mp-page{padding:0 18px calc(var(--mp-h,0px) + var(--tab-h,64px) + 24px);position:relative;z-index:1}
+
+/* 顶栏：‹ 标题 ⋯（按钮做毛玻璃圆片，浮在背景上有层次） */
+.mp-app-top{display:flex;align-items:center;justify-content:space-between;
+  padding:14px 2px 8px;position:relative;z-index:2}
+.mp-app-top button{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);
+  color:var(--mp-fg);width:38px;height:38px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16), 0 2px 8px rgba(0,0,0,.25);
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1), background .18s}
+.mp-app-top button:active{transform:scale(.9);background:rgba(255,255,255,.14)}
+.mp-app-top .mp-app-title{font-size:16px;font-weight:600;text-align:center;flex:1;min-width:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-app-top-tx{flex:1;min-width:0;text-align:center}
+.mp-app-top-tx b{display:block;font-size:16px;font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-app-top-tx i{display:block;font-size:11px;font-style:normal;color:var(--mp-fg-soft);
+  margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-app-top-act{display:flex;gap:4px}
+.mp-app-top--list .mp-app-title{font-size:15px}
+
+/* 主页 · 头像区（头像加双层光环 + 顶部高光，玻璃珠质感） */
+.mp-app-profile{text-align:center;padding:8px 0 18px}
+.mp-app-avatar{position:relative;width:96px;height:96px;border-radius:50%;margin:6px auto 10px;
+  background-size:cover;background-position:center;
+  box-shadow:
+    0 10px 32px rgba(0,0,0,.50),
+    0 0 0 3px rgba(255,255,255,.10),
+    0 0 0 1px rgba(255,255,255,.06),
+    inset 0 2px 0 rgba(255,255,255,.28),
+    inset 0 -6px 14px rgba(0,0,0,.30)}
+/* 字母头像：没上传图片时，用「昵称首字 + 主色渐变」生成，
+   比直接拿第一首歌的专辑封面当头像合理得多（此前未设头像时显示的是唱片封面）。 */
+.mp-app-avatar::before{content:attr(data-letter);position:absolute;inset:0;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;pointer-events:none;
+  font-family:"Playfair Display","Noto Serif SC",Georgia,serif;
+  font-size:40px;font-weight:600;color:rgba(255,255,255,.94);
+  letter-spacing:.02em;text-shadow:0 2px 12px rgba(0,0,0,.38);
+  background:
+    radial-gradient(70% 60% at 30% 22%, rgba(255,255,255,.22), transparent 70%),
+    linear-gradient(145deg, var(--mp-accent,#c9a98c) 0%, rgba(24,20,20,.92) 128%)}
+.mp-app-avatar.has-img::before{display:none}
+/* 头像顶部高光（玻璃反光） */
+.mp-app-avatar::after{content:"";position:absolute;left:12%;top:8%;width:76%;height:38%;
+  border-radius:50%;pointer-events:none;
+  background:linear-gradient(180deg, rgba(255,255,255,.28), transparent 72%);
+  filter:blur(1px)}
+/* 右下角「换头像」小角标：一眼看出这里能点 */
+.mp-app-avatar .av-edit{position:absolute;right:-2px;bottom:-2px;width:28px;height:28px;
+  border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:13px;line-height:1;z-index:2;
+  background:rgba(22,20,20,.72);color:#fff;
+  border:1.5px solid rgba(255,255,255,.55);
+  box-shadow:0 3px 10px rgba(0,0,0,.45);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+/* 衬线字体：项目已引入 Playfair Display，标题统一走它，接近参考图的优雅感 */
+.mp-app-name{font-family:"Playfair Display","Noto Serif SC",Georgia,serif;
+  font-size:21px;font-weight:600;color:var(--mp-fg);letter-spacing:.01em}
+.mp-app-sig{font-size:12px;color:var(--mp-fg-soft);margin-top:5px;line-height:1.6;font-style:italic}
+
+/* 主页 · 4 个歌单封面（顶部高光条 + 底部压暗，保证文字可读） */
+.mp-app-pfs{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:6px 0 18px}
+.pf{position:relative;aspect-ratio:1/1;border-radius:var(--radius);background-size:cover;background-position:center;
+  background-color:rgba(255,255,255,.04);overflow:hidden;cursor:pointer;
+  box-shadow:
+    0 6px 18px rgba(0,0,0,.42),
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 0 0 1px rgba(255,255,255,.07);
+  transition:transform .18s var(--ease), box-shadow .18s var(--ease)}
+.pf:active{transform:scale(.95);box-shadow:0 2px 8px rgba(0,0,0,.5)}
+/* 顶部高光条 + 底部压暗渐变（文字永远清晰） */
+.pf::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.16) 0%, transparent 28%),
+    linear-gradient(0deg, rgba(0,0,0,.55) 0%, transparent 45%)}
+.pf-label{position:absolute;left:8px;bottom:7px;font-size:11px;font-weight:600;color:#fff;z-index:2;
+  text-shadow:0 1px 3px rgba(0,0,0,.85);letter-spacing:.04em}
+.pf-empty{background:linear-gradient(135deg,rgba(255,255,255,.07),rgba(255,255,255,.02));
+  display:flex;align-items:center;justify-content:center;color:var(--mp-fg-dim);font-size:22px}
+
+/* 主页 · 已播列表 */
+.mp-app-pl-header{display:flex;align-items:center;gap:8px;padding:6px 2px 8px}
+.mp-app-pl-header b{font-size:15px;font-weight:600;color:var(--mp-fg)}
+.mp-app-pl-header span{font-size:12px;color:var(--mp-fg-soft);flex-shrink:0}
+.mp-app-full-btn{margin-left:auto;background:var(--mp-card);border:1px solid var(--mp-card-bd);
+  color:var(--mp-fg);font-size:12px;padding:6px 12px;border-radius:999px;cursor:pointer}
+.mp-app-pl{display:flex;flex-direction:column;gap:8px;padding-bottom:8px}
+/* 列表卡片：玻璃拟态（半透明 + 背景模糊 + 顶部高光条 + 微边框） */
+.mp-app-pl-row{position:relative;display:flex;align-items:center;gap:10px;padding:10px 12px;
+  background:var(--mp-card);border:1px solid var(--mp-card-bd);border-radius:var(--radius);
+  -webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 4px 14px rgba(0,0,0,.28);
+  overflow:hidden;cursor:pointer;
+  transition:background .18s var(--ease), transform .18s var(--ease)}
+.mp-app-pl-row::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;pointer-events:none;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent)}
+.mp-app-pl-row:active{background:rgba(255,255,255,.10);transform:scale(.985)}
+.mp-app-pl-row.on{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.16)}
+.mp-app-pl-cvr{width:42px;height:42px;border-radius:8px;background-size:cover;background-position:center;
+  flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.10)}
+.mp-app-pl-tx{flex:1;min-width:0}
+.mp-app-pl-tx b{display:block;font-size:14px;font-weight:600;color:var(--mp-fg);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-app-pl-tx i{display:block;font-size:11px;font-style:normal;color:var(--mp-fg-soft);
+  margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-app-pl-go{font-size:14px;color:var(--mp-fg);width:24px;text-align:center;flex-shrink:0}
+
+/* 列表页 · 大封面卡片 */
+.mp-app-pl-card{text-align:center;padding:6px 0 18px}
+.mp-app-pl-cvr-lg{width:60%;max-width:220px;aspect-ratio:1/1;margin:0 auto 14px;
+  border-radius:18px;background-size:cover;background-position:center;cursor:pointer;
+  box-shadow:0 14px 40px rgba(0,0,0,.55), inset 0 0 0 1px rgba(255,255,255,.10)}
+.mp-app-pl-name{font-size:22px;font-weight:700;color:var(--mp-fg);letter-spacing:-.01em}
+.mp-app-pl-intro{font-size:12px;color:var(--mp-fg-soft);margin-top:4px}
+
+/* 列表页 · 歌单列表头 */
+.mp-app-pl-list-hdr{display:flex;align-items:center;gap:8px;padding:10px 2px 8px}
+.mp-app-pl-list-hdr b{font-size:15px;font-weight:600;color:var(--mp-fg)}
+.mp-app-pl-list-hdr span{font-size:12px;color:var(--mp-fg-soft)}
+.mp-app-add-btn{margin-left:auto;background:var(--mp-card);border:1px solid var(--mp-card-bd);
+  color:var(--mp-fg);font-size:12px;padding:6px 12px;border-radius:999px;cursor:pointer}
+
+/* 列表页 · 歌单行 */
+.mp-app-pl-list{display:flex;flex-direction:column;gap:6px;padding-bottom:16px}
+.mp-app-pl-li{position:relative;display:flex;align-items:center;gap:12px;padding:8px 12px;
+  background:var(--mp-card);border:1px solid var(--mp-card-bd);border-radius:var(--radius-m);
+  -webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 4px 14px rgba(0,0,0,.28);
+  overflow:hidden;cursor:pointer;
+  transition:background .15s var(--ease), transform .15s var(--ease)}
+.mp-app-pl-li::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;pointer-events:none;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.28), transparent)}
+.mp-app-pl-li:active{background:rgba(255,255,255,.10);transform:scale(.985)}
+.mp-app-pl-li.on{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.16)}
+.mp-app-pl-li-no{width:18px;text-align:center;font-size:12px;color:var(--mp-fg-soft);flex-shrink:0;font-variant-numeric:tabular-nums}
+.mp-app-pl-li.on .mp-app-pl-li-no{color:var(--mp-fg)}
+.mp-app-pl-li-cvr{width:44px;height:44px;border-radius:6px;background-size:cover;background-position:center;
+  flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.10)}
+.mp-app-pl-li-tx{flex:1;min-width:0}
+.mp-app-pl-li-tx b{display:block;font-size:14px;font-weight:600;color:var(--mp-fg);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-app-pl-li-tx i{display:block;font-size:11px;font-style:normal;color:var(--mp-fg-soft);
+  margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-app-pl-li-more{background:none;border:none;color:var(--mp-fg-soft);width:32px;height:32px;
+  display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0}
+.mp-app-pl-empty{padding:32px 8px;text-align:center;color:var(--mp-fg-soft);font-size:13px}
+
+/* 播放页 · 唱片 */
+.mp-app-player .mp-page{padding-top:6px}
+.mp-app-disc-wrap{position:relative;width:100%;display:flex;justify-content:center;
+  padding:18px 0 4px;min-height:min(58vw,300px);align-items:center}
+/* 唱片：封面铺满 + 黑胶沟槽 + 内圈标签环 + 立体投影 */
+.mp-app-disc{position:relative;width:min(70vw,300px);aspect-ratio:1/1;border-radius:50%;
+  background-size:cover;background-position:center;cursor:pointer;flex-shrink:0;
+  box-shadow:
+    0 34px 90px rgba(0,0,0,.70),          /* 落地投影 */
+    0 8px 24px rgba(0,0,0,.45),           /* 近距接触阴影 */
+    0 0 0 1px rgba(255,255,255,.10),      /* 边缘高光线 */
+    inset 0 0 0 1px rgba(255,255,255,.14),
+    inset 0 0 40px rgba(0,0,0,.35);       /* 内圈压暗，增加厚重感 */
+  transition:width .35s var(--ease)}
+/* 黑胶沟槽：多层同心圆 + conic 反光扇面（黑胶转动时的高光反射） */
+.mp-app-disc::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;
+  background:
+    /* 细沟槽（外圈密） */
+    repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,.07) 0 1px, transparent 1px 3px),
+    /* 粗沟槽（内圈疏） */
+    repeating-radial-gradient(circle at 50% 50%, rgba(0,0,0,.22) 0 1px, transparent 1px 6px),
+    /* 外缘一圈亮边（唱片倒角） */
+    radial-gradient(circle at 50% 50%, transparent 0 96%, rgba(255,255,255,.12) 97%, transparent 100%);
+  opacity:.9;mix-blend-mode:overlay}
+/* 反光扇面：两道交叉亮弧，模拟黑胶盘面反光（随唱片一起转） */
+.mp-app-disc::before{content:"";position:absolute;inset:-1px;border-radius:50%;pointer-events:none;z-index:1;
+  background:
+    conic-gradient(from 305deg at 50% 50%,
+      transparent 0deg, rgba(255,255,255,.10) 14deg, rgba(255,255,255,.02) 34deg, transparent 52deg),
+    conic-gradient(from 118deg at 50% 50%,
+      transparent 0deg, rgba(255,255,255,.05) 18deg, transparent 40deg);
+  mix-blend-mode:screen}
+/* 中心方形封面贴片：参考图的标志性元素（像真实唱片厂牌贴纸） */
+.mp-app-disc-label{position:absolute;left:50%;top:50%;width:34%;aspect-ratio:1/1;
+  transform:translate(-50%,-50%);border-radius:9px;z-index:2;
+  background-size:cover;background-position:center;
+  box-shadow:
+    0 0 0 1.5px rgba(255,255,255,.92),
+    0 0 0 4px rgba(0,0,0,.18),
+    0 10px 24px rgba(0,0,0,.45);
+  transition:width .35s var(--ease)}
+/* 中心转轴（主轴孔 + 金属环）：缩为真实比例，叠在贴片上 */
+.mp-app-disc-hole{position:absolute;left:50%;top:50%;width:7%;height:7%;transform:translate(-50%,-50%);
+  border-radius:50%;z-index:3;
+  background:
+    radial-gradient(circle at 50% 42%, #4a4a54 0 30%, #101014 34% 100%);
+  box-shadow:
+    inset 0 0 0 1.5px rgba(255,255,255,.22),
+    inset 0 2px 5px rgba(0,0,0,.8),
+    0 2px 8px rgba(0,0,0,.5)}
+.mp-app-disc.spinning{animation:mpInkSpin 22s linear infinite}
+/* 环境高光：固定在唱片上方不随转动（真实世界里光源不动、唱片在转） */
+.mp-app-disc-shine{position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:min(70vw,300px);aspect-ratio:1/1;border-radius:50%;pointer-events:none;z-index:4;
+  background:
+    /* 左上主高光 */
+    radial-gradient(38% 30% at 30% 22%, rgba(255,255,255,.16), transparent 70%),
+    /* 右下反射光 */
+    radial-gradient(30% 24% at 72% 78%, rgba(255,255,255,.07), transparent 70%);
+  mix-blend-mode:screen;transition:width .35s var(--ease)}
+.mp-app.lyric-on .mp-app-disc-shine{width:min(40vw,150px)}
+/* 唱臂：金属转轴 + 配重 + 唱头 */
+.mp-app-arm{position:absolute;top:6px;right:13%;width:34%;height:52%;pointer-events:none;z-index:5;
+  transform-origin:86% 8%;transform:rotate(-32deg);
+  transition:transform .6s cubic-bezier(.34,1.28,.64,1)}
+.mp-app-arm.on{transform:rotate(4deg)}
+/* 转轴底座（金属圆盘 + 内圈） */
+.mp-app-arm-base{position:absolute;top:0;right:0;width:22px;height:22px;border-radius:50%;
+  background:
+    radial-gradient(circle at 35% 30%, #7a7a86 0%, #3e3e46 55%, #22222a 100%);
+  box-shadow:
+    0 3px 10px rgba(0,0,0,.65),
+    inset 0 1px 1px rgba(255,255,255,.45),
+    inset 0 -1px 2px rgba(0,0,0,.5)}
+/* 弧形托架：底座后半圈金属弧，像真实唱机的轴承座 */
+.mp-app-arm-base::before{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:32px;height:32px;border-radius:50%;
+  background:conic-gradient(from 200deg, rgba(255,255,255,.16) 0 40deg, transparent 60deg 300deg, rgba(255,255,255,.10) 320deg 360deg);
+  -webkit-mask:radial-gradient(circle, transparent 0 14px, #000 15px);
+  mask:radial-gradient(circle, transparent 0 14px, #000 15px)}
+.mp-app-arm-base::after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:8px;height:8px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #c8c8d2, #55555f);
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.6)}
+/* 臂杆（渐变金属管，中段受光） */
+.mp-app-arm-rod{position:absolute;top:10px;right:9px;width:4px;height:84%;border-radius:2px;
+  background:linear-gradient(90deg,#2e2e36 0%,#8f8f9c 35%,#c4c4d0 48%,#6a6a76 62%,#2a2a32 100%);
+  box-shadow:0 1px 5px rgba(0,0,0,.65);
+  transform-origin:top;transform:rotate(30deg)}
+/* 唱头：斜切壳体 + 针尖亮点 */
+.mp-app-arm-rod::after{content:"";position:absolute;bottom:-3px;left:50%;transform:translateX(-50%) rotate(8deg);
+  width:11px;height:16px;
+  clip-path:polygon(18% 0,100% 10%,82% 100%,0 90%);
+  background:linear-gradient(155deg,#5a5a66 0%,#26262e 60%,#16161c 100%);
+  box-shadow:0 3px 8px rgba(0,0,0,.7)}
+.mp-app-arm-rod::before{content:"";position:absolute;bottom:2px;left:1px;width:3px;height:3px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #fff, #9a9aa6);
+  box-shadow:0 0 4px rgba(255,255,255,.5)}
+/* 提示 + 歌词 */
+.mp-app-tip{text-align:center;font-size:10px;color:var(--mp-fg-dim);
+  padding:10px 0 2px;letter-spacing:.22em;text-transform:uppercase;opacity:.75}
+.mp-app-lyric{padding:6px 0;min-height:32px}
+.mp-app-lyric .nl-line{font-size:14px;color:var(--mp-fg-soft);line-height:1.7}
+.mp-app-lyric .nl-line.on{color:var(--mp-fg);font-weight:600;font-size:15px}
+/* 底部信息条 */
+.mp-app-meta{display:flex;align-items:flex-end;gap:10px;padding:10px 4px 6px}
+.mp-app-meta-tx{flex:1;min-width:0}
+.mp-app-meta-tx b{display:block;font-size:18px;font-weight:700;letter-spacing:-.01em;color:var(--mp-fg);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-app-meta-tx i{display:block;font-size:12px;font-style:normal;color:var(--mp-fg-soft);margin-top:3px}
+.mp-app-follow{color:var(--mp-fg-dim)}
+.mp-app-meta-act{display:flex;align-items:center;gap:6px;padding-bottom:2px;flex-shrink:0}
+.mp-app-meta-act button{background:none;border:none;color:var(--mp-fg-soft);padding:2px;display:flex}
+.mp-app-meta-act button.on{color:var(--ny-red,#ec4141)}
+.mp-app-num{font-size:11px;color:var(--mp-fg-dim);font-variant-numeric:tabular-nums}
+/* 进度条：凹槽+内阴影，滑块带发光（跟随主色） */
+.mp-app-seek{padding:6px 0 2px}
+.mp-app-seek input[type="range"]{width:100%;height:4px;-webkit-appearance:none;appearance:none;
+  background:rgba(255,255,255,.16);border-radius:99px;outline:none;
+  box-shadow:inset 0 1px 2px rgba(0,0,0,.45)}
+.mp-app-seek input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
+  width:12px;height:12px;border-radius:50%;background:#fff;cursor:pointer;
+  box-shadow:0 0 0 3px rgba(255,255,255,.14), 0 2px 8px rgba(0,0,0,.55);
+  transition:transform .15s var(--ease)}
+.mp-app-seek input[type="range"]:active::-webkit-slider-thumb{transform:scale(1.25)}
+.mp-app-time{display:flex;justify-content:space-between;font-size:10px;color:var(--mp-fg-dim);
+  margin-top:4px;font-variant-numeric:tabular-nums}
+/* 单行控制：5 颗按钮，大圆播放居中 */
+.mp-app-ctrl{display:flex;align-items:center;justify-content:space-between;padding:8px 0 4px}
+.mp-app-ctrl button{background:none;border:none;color:var(--mp-fg);width:48px;height:48px;
+  display:flex;align-items:center;justify-content:center;padding:0;
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1)}
+.mp-app-ctrl button:active{transform:scale(.9)}
+/* 大圆播放：主色驱动 + 顶部高光 + 光晕（不再是死白） */
+.mp-app-ctrl .mp-app-play{width:66px;height:66px;border-radius:50%;
+  background:linear-gradient(155deg, var(--mp-play-1,#ffffff) 0%, var(--mp-play-2,#d8d8de) 100%);
+  color:var(--mp-play-fg,#16161a);
+  box-shadow:
+    0 12px 28px rgba(0,0,0,.55),
+    0 0 0 1px rgba(255,255,255,.14),
+    inset 0 2px 0 rgba(255,255,255,.45),
+    inset 0 -3px 8px rgba(0,0,0,.12)}
+.mp-app-ctrl .mp-app-play:active{transform:scale(.9)}
+
+/* 折叠区：更多信息（白噪音/导入/变速…） */
+.mp-app-fold{margin-top:14px}
+.mp-app-fold-h{display:flex;align-items:center;justify-content:space-between;
+  padding:12px 8px;border-top:1px solid var(--mp-divider);
+  color:var(--mp-fg-soft);font-size:13px;cursor:pointer}
+.mp-app-fold-h i{transition:transform .25s;display:inline-block}
+.mp-app-fold-h.on i{transform:rotate(180deg)}
+.mp-app-fold-row{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 12px;background:var(--mp-card);border-radius:var(--radius-sm);margin-bottom:6px}
+.mp-app-fold-row span{font-size:13px;color:var(--mp-fg)}
+.mp-app-fold-row button{background:rgba(255,255,255,.08);border:1px solid var(--mp-card-bd);
+  color:var(--mp-fg);padding:6px 12px;border-radius:999px;font-size:12px;display:flex;align-items:center;gap:4px}
+.mp-app-fold-body{padding:8px 0 16px}
+
+/* 让折叠里的 ny-group / ny-row 适配暗色 */
+.mp-app-fold .ny-group{background:var(--mp-card);border:1px solid var(--mp-card-bd);border-radius:var(--radius);
+  padding:10px 12px;margin-bottom:8px}
+.mp-app-fold .ny-group-h{color:var(--mp-fg);font-size:13px;margin-bottom:6px;font-weight:600}
+.mp-app-fold .ny-row{color:var(--mp-fg);border-color:var(--mp-divider);padding:8px 4px}
+.mp-app-fold .ny-row .ny-r-tx b{color:var(--mp-fg)}
+.mp-app-fold .ny-row .ny-r-tx i{color:var(--mp-fg-soft)}
+.mp-app-fold .mini-note{color:var(--mp-fg-dim)}
+
+/* 整页滚动条 */
+.music-root.mp-app::-webkit-scrollbar{width:4px}
+.music-root.mp-app::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:99px}
+
+/* 歌词模式：唱片缩小 */
+.mp-app.lyric-on .mp-app-disc{width:min(40vw,150px)}
+.mp-app.lyric-on .mp-app-arm{opacity:.35}
+
+/* 反压 DEFAULT_CSS 的全局 button{...!important}：
+   用户样式里 `button{border-radius:var(--radius-m)!important;background:...!important;padding:8px 16px!important}`
+   会把全项目按钮统一改成圆角方块，mp-app 内的按钮按本模块设计走。
+   同为 !important 时比特异性：.music-root.mp-app button (0,2,1) > button (0,0,1)。 */
+.music-root.mp-app button,
+.music-root.mp-app .btn{
+  border-radius:50% !important;
+  background:rgba(255,255,255,.07) !important;
+  border:1px solid rgba(255,255,255,.10) !important;
+  color:var(--mp-fg,#EDEDF0) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 2px 8px rgba(0,0,0,.22) !important;
+  -webkit-backdrop-filter:blur(12px) !important; backdrop-filter:blur(12px) !important;
+}
+.music-root.mp-app button:hover{ background:rgba(255,255,255,.13) !important; }
+/* 顶栏圆片 */
+.music-root.mp-app .mp-app-top button{ width:38px !important; height:38px !important; padding:0 !important; }
+/* 控制栏圆片 */
+.music-root.mp-app .mp-app-ctrl button{ width:48px !important; height:48px !important; padding:0 !important; }
+/* 大圆播放：主色渐变 */
+.music-root.mp-app .mp-app-ctrl .mp-app-play{
+  width:66px !important; height:66px !important; padding:0 !important;
+  background:linear-gradient(155deg, var(--mp-play-1,#ffffff) 0%, var(--mp-play-2,#d8d8de) 100%) !important;
+  color:var(--mp-play-fg,#16161a) !important;
+  box-shadow:0 12px 28px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.14), inset 0 2px 0 rgba(255,255,255,.45) !important;
+}
+/* 文字胶囊按钮（全屏播放器 / 添加歌曲 / 折叠行内按钮） */
+.music-root.mp-app .mp-app-full-btn,
+.music-root.mp-app .mp-app-add-btn{
+  border-radius:999px !important; width:auto !important; height:auto !important;
+  padding:7px 14px !important; font-size:12px !important; line-height:1.4 !important;
+}
+/* 折叠区内：全部胶囊（白噪音控制 / 定时 / 清除已完成 / 变速等） */
+.music-root.mp-app .mp-app-fold button{
+  border-radius:999px !important; width:auto !important; height:auto !important;
+  padding:6px 12px !important; font-size:12px !important; line-height:1.4 !important;
+}
+/* 无边框透明小按钮（心形点赞 / 歌单行 ⋯） */
+.music-root.mp-app .mp-app-meta-act button,
+.music-root.mp-app .mp-app-pl-li-more{
+  background:none !important; border:none !important; box-shadow:none !important;
+  -webkit-backdrop-filter:none !important; backdrop-filter:none !important;
+  width:auto !important; height:auto !important; padding:2px !important;
+}
+
+@media (prefers-reduced-motion: reduce){
+  .mp-app-disc.spinning{animation:none}
+  .mp-app-arm{transition:none}
+}
+
+.ny-stage.mp-ink{
+  position:relative;overflow:hidden;
+  background:
+    radial-gradient(120% 80% at 50% 6%, rgba(255,255,255,.07), transparent 55%),
+    repeating-linear-gradient(112deg, rgba(255,255,255,.022) 0 1px, transparent 1px 5px),
+    linear-gradient(168deg,#232327 0%,#16161a 46%,#0e0e11 100%);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:var(--radius-l,20px);
+  color:#EDEDF0;
+  padding:var(--s-1,4px) var(--s-2,8px) var(--s-4,16px);
+  box-shadow:0 18px 50px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.06);
+}
+/* ⑥ 动画 keyframes */
+/* 暗色黑胶皮肤：唱片匀速旋转 */
+@keyframes mpInkSpin { to { transform: rotate(360deg); } }
+@keyframes liquidSheen {
+  0%,100%{
+    background-position:0% 0%;
+  }
+  50%{
+    background-position:100% 100%;
+  }
+}
+/* #13 液态玻璃：主题下封面渐变主色缓慢流动，让玻璃质感更"活"（克制 16s） */
+html[data-theme="liquid"] .home-hero{
+  background-size:200% 200%!important;
+  animation:liquidSheen 16s ease-in-out infinite;
+  will-change:background-position;
+}
+html[data-theme="liquid"] .bot-tab .bt-indicator{
+  background:linear-gradient(90deg,var(--primary),var(--accent));
+  animation:liquidSheen 6s ease-in-out infinite;
+  background-size:200% 200%;
+  will-change:background-position;
+}
+html[data-theme="liquid"] .app .card, html[data-theme="liquid"] .app .home-hero, html[data-theme="liquid"] .app .heart-card, html[data-theme="liquid"] .app .banner, html[data-theme="liquid"] .app .bento-card, html[data-theme="liquid"] .app .profile-card, html[data-theme="liquid"] .app .dash-card, html[data-theme="liquid"] .app .daily-pick, html[data-theme="liquid"] .app .goal-card, html[data-theme="liquid"] .app .home-wx, html[data-theme="liquid"] .app .today-ov, html[data-theme="liquid"] .app .action-zone, html[data-theme="liquid"] .app .quote-bar, html[data-theme="liquid"] .app .feed-card, html[data-theme="liquid"] .app .qa-item, html[data-theme="liquid"] .app .mood-card, html[data-theme="liquid"] .app .whisper-wall, html[data-theme="liquid"] .app .focus-card, html[data-theme="liquid"] .app .streak-hero, html[data-theme="liquid"] .app .ticket{
+  background:linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.02) 46%, rgba(255,255,255,0.06) 100%), var(--glass-bg)!important;
+  border:1px solid var(--glass-border)!important;
+  box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,0.28)!important;
+  -webkit-backdrop-filter:blur(30px) saturate(1.3)!important;
+  backdrop-filter:blur(30px) saturate(1.3)!important;
+  background-size:220% 220%;
+  animation:liquidSheen 7s ease-in-out infinite;
+  will-change:background-position;
+  color:var(--text);
+}
+html[data-theme="liquid"] .mod-h1, html[data-theme="liquid"] .card h3, html[data-theme="liquid"] .home-h1{
+  font-family:"Noto Serif SC","Songti SC","STSong",serif!important;
+  color:var(--ink);
+  font-weight:600;
+  letter-spacing:.5px;
+  text-shadow:0 0 20px rgba(159,180,255,0.30);
+}
+html[data-theme="liquid"] .divider, html[data-theme="liquid"] .ticket-div{
+  border-top:1px solid rgba(255,255,255,0.16);
+}
+/* ===== 主题：极简主义（Minimalism）精致化 =====
+     纯白底、发丝描边、近乎无影、大量留白；唯一强调色为炭黑。 */
+html[data-theme="minimal"] .app .card, html[data-theme="minimal"] .app .home-hero, html[data-theme="minimal"] .app .heart-card, html[data-theme="minimal"] .app .banner, html[data-theme="minimal"] .app .bento-card, html[data-theme="minimal"] .app .profile-card, html[data-theme="minimal"] .app .dash-card, html[data-theme="minimal"] .app .daily-pick, html[data-theme="minimal"] .app .goal-card, html[data-theme="minimal"] .app .home-wx, html[data-theme="minimal"] .app .today-ov, html[data-theme="minimal"] .app .action-zone, html[data-theme="minimal"] .app .quote-bar, html[data-theme="minimal"] .app .feed-card, html[data-theme="minimal"] .app .qa-item, html[data-theme="minimal"] .app .mood-card, html[data-theme="minimal"] .app .whisper-wall, html[data-theme="minimal"] .app .focus-card, html[data-theme="minimal"] .app .streak-hero, html[data-theme="minimal"] .app .ticket{
+  background:var(--glass-bg)!important;
+  border:1px solid rgba(0,0,0,0.07)!important;
+  box-shadow:0 1px 3px rgba(0,0,0,0.05)!important;
+  color:var(--text);
+}
+html[data-theme="minimal"] .mod-h1, html[data-theme="minimal"] .card h3, html[data-theme="minimal"] .home-h1{
+  color:var(--ink);
+  font-weight:600;
+  letter-spacing:.3px;
+}
+/* 极简：关闭彩色光晕层，露出纯白底 */
+/* ============ 🪶 黑白明信片主题（直接学自黑白明信片全套.docx）============
+     暗色单色玻璃 + 衬线宋体 + 拍立得灰度 + 描边镂空英文。把整套 docx 语言沉淀为整台主题。 */
+[data-theme="postcard"]{
+  --bg:#0e0e10!important;
+  --primary:#a0a3a8;
+  --accent:#777a7e;
+  --ink:#ececec;
+  --text:#d7d8da;
+  --gray:#a0a3a8;
+  --line:rgba(255,255,255,.12);
+  --glass-bg:rgba(20,20,22,.62);
+  --glass-border:rgba(255,255,255,.10);
+  --glass-solid:rgba(20,20,22,.78);
+  --glass-flat:rgba(20,20,22,.88);
+  --blur:14px;
+  --halo1:transparent;
+  --halo2:transparent;
+  --shadow:0 12px 32px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06);
+  --action-bg:rgba(255,255,255,.06);
+  --font-zh:"Noto Serif SC","Songti SC","STSong",serif;
+  --font-en:"Montserrat","Helvetica Neue",sans-serif;
+  --font-serif:"Cactus Classical Serif","Noto Serif SC",serif;
+  --bg-mat:url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScyNDAnIGhlaWdodD0nMjQwJz48ZmlsdGVyIGlkPSduJz48ZmVUdXJidWxlbmNlIHR5cGU9J2ZyYWN0YWxOb2lzZScgYmFzZUZyZXF1ZW5jeT0nMC44NScgbnVtT2N0YXZlcz0nMicgc3RpdGNoVGlsZXM9J3N0aXRjaCcvPjxmZUNvbG9yTWF0cml4IHR5cGU9J3NhdHVyYXRlJyB2YWx1ZXM9JzAnLz48L2ZpbHRlcj48cmVjdCB3aWR0aD0nMjQwJyBoZWlnaHQ9JzI0MCcgZmlsdGVyPSd1cmwoI24pJyBvcGFjaXR5PScuMjInLz48L3N2Zz4=");
+  --bg-mat-blend:overlay;
+  --accent-ink:#939699;
+  --primary-ink:#a0a3a8;
+  --danger-ink:#E57474;
+  --warn-ink:#FFB74D;
+  --ok-ink:#81C784;
+}
+html[data-theme="postcard"] .card, html[data-theme="postcard"] .app .card, html[data-theme="postcard"] .home-hero, html[data-theme="postcard"] .heart-card, html[data-theme="postcard"] .banner, html[data-theme="postcard"] .bento-card, html[data-theme="postcard"] .profile-card, html[data-theme="postcard"] .dash-card, html[data-theme="postcard"] .daily-pick, html[data-theme="postcard"] .goal-card, html[data-theme="postcard"] .home-wx, html[data-theme="postcard"] .today-ov, html[data-theme="postcard"] .action-zone, html[data-theme="postcard"] .quote-bar, html[data-theme="postcard"] .feed-card, html[data-theme="postcard"] .qa-item, html[data-theme="postcard"] .mood-card, html[data-theme="postcard"] .whisper-wall, html[data-theme="postcard"] .focus-card, html[data-theme="postcard"] .streak-hero, html[data-theme="postcard"] .ticket, html[data-theme="postcard"] .skill-card, html[data-theme="postcard"] .more-grid .cell, html[data-theme="postcard"] .pill, html[data-theme="postcard"] .exp-chip, html[data-theme="postcard"] .check-item, html[data-theme="postcard"] .mat-opt, html[data-theme="postcard"] .more-menu-item, html[data-theme="postcard"] .ach{
+  background:var(--glass-bg)!important;
+  border:1px solid var(--glass-border)!important;
+  color:var(--text)!important;
+  box-shadow:var(--shadow)!important;
+  -webkit-backdrop-filter:blur(var(--blur)) saturate(1.2)!important;
+  backdrop-filter:blur(var(--blur)) saturate(1.2)!important;
+}
+html[data-theme="postcard"] .topbar{
+  background:rgba(15,15,17,.78);
+  border-bottom:1px solid rgba(255,255,255,.08);
+  color:#ececec;
+}
+html[data-theme="postcard"] .topbar .title,html[data-theme="postcard"] .bt-item.active,html[data-theme="postcard"] .today-ov .to-title, html[data-theme="postcard"] .today-ov .to-val,html[data-theme="postcard"] .hg-hi,html[data-theme="frost"] .whisper-card .wc-text,html[data-theme="frost"] .np-h-title,.noise-item.on .ni-ic,.noise-item.on .ni-name,.noise-item.on .ni-sub,.gs-item.active .gs-label,.seg-item.active{
+  color:#fff;
+}
+html[data-theme="postcard"] .topbar .top-act{
+  background:rgba(255,255,255,.08);
+  color:#fff;
+}
+html[data-theme="postcard"] .mod-head{
+  color:#ececec;
+  border-bottom:1px solid rgba(255,255,255,.1);
+}
+html[data-theme="postcard"] .mod-h1{
+  color:#fff;
+  font-family:var(--font-serif,"Noto Serif SC");
+  font-weight:600;
+  letter-spacing:.5px;
+}
+html[data-theme="postcard"] .card h3{
+  color:#fff;
+  font-family:var(--font-zh);
+  font-weight:600;
+}
+html[data-theme="postcard"] .card h3[data-en]::before{
+  color:var(--gray);
+  letter-spacing:4px;
+  font-family:var(--font-en);
+  font-size:9px;
+  text-transform:uppercase;
+}
+html[data-theme="postcard"] .divider{
+  border-top:1px dashed rgba(255,255,255,.18);
+}
+html[data-theme="postcard"] .bot-tab{
+  background:rgba(15,15,17,.92);
+  border-top:1px solid rgba(255,255,255,.08);
+  color:var(--gray);
+}
+html[data-theme="postcard"] .home-hero{
+  color:#fff;
+  border:1px solid rgba(255,255,255,.08);
+}
+html[data-theme="postcard"] .to-bar{
+  background:rgba(255,255,255,.10);
+}
+html[data-theme="postcard"] .quote-bar{
+  border-left-color:rgba(255,255,255,.35);
+}
+html[data-theme="postcard"] .fab-refresh{
+  background:rgba(255,255,255,.08);
+  border-color:rgba(255,255,255,.15);
+  color:#fff;
+}
+html[data-theme="postcard"] .fab-ai{
+  background:rgba(255,255,255,.88);
+  color:#0a0a0a;
+  border:1px solid rgba(0,0,0,.3);
+}
+html[data-theme="postcard"] .skeleton-line{
+  background:linear-gradient(100deg,rgba(255,255,255,.06) 30%,rgba(255,255,255,.16) 50%,rgba(255,255,255,.06) 70%);
+}
+html[data-theme="postcard"] .home-status-bar,.home-block-thumb.placeholder .hbt-cap,html[data-theme="dark"] .yanj-content, html[data-theme="frost"] .yanj-content, html[data-theme="liquid"] .yanj-content, html[data-theme="postcard"] .yanj-content{
+  color:var(--text);
+}
+html[data-theme="postcard"] .hsb-time{
+  color:#fff;
+  font-family:var(--font-serif,"Noto Serif SC");
+}
+html[data-theme="postcard"] .home-edit-bar{
+  background:rgba(20,20,22,.85);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.1);
+}
+html[data-theme="postcard"] .svg-ic{
+  color:#ececec;
+}
+html[data-theme="postcard"] img:not(.no-grain){
+  filter:grayscale(.85) contrast(1.05);
+}

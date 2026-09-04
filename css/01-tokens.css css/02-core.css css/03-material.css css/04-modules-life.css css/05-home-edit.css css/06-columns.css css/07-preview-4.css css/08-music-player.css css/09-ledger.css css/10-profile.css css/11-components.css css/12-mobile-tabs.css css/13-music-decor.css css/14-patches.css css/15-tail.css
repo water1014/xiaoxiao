@@ -1,1 +1,325 @@
+@charset "UTF-8";
+/* ============================================================
+   笑笑养成记 · 工作台 —— 样式分片 15/15
+   文件：css/15-tail.css
+   来源：原 index.html 第 29823–30032 行、第 30035–30138 行
+   内容：尾部补丁 + wb-polish-v1（大屏适配 / 卡片入场 / 主题过渡等）
+   ------------------------------------------------------------
+   ⚠️ 分片按【原文件顺序】物理切分，层叠顺序与原来的单文件完全一致。
+      修改样式请就地编辑对应分片；不要跨分片调整引入顺序，
+      否则会改变 CSS 层叠优先级，造成难以定位的样式回退。
+   ============================================================ */
+.cen-v4-drag-layer {
+  position: fixed;
+  /* 手机灵动岛位置：顶部安全区下方居中，避开状态栏，不压页面中部内容 */
+  top: calc(env(safe-area-inset-top, 0px) + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2147483647;
+  user-select: none;
+  touch-action: none;
+  /* 默认完全隐藏：不吃点击、不抢视觉。播放时加 .cen-v4-active 淡入 */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .45s cubic-bezier(.2,.8,.1,1.1);
+}
+/* 激活态（播放中）：只显示小胶囊，透明度 0.68 弱化视觉抢夺；需点击才展开面板 */
+.cen-v4-drag-layer.cen-v4-active { opacity: .68; pointer-events: auto; }
+/* 触摸/悬停时提亮到 0.9，方便操作 */
+.cen-v4-drag-layer.cen-v4-active:hover { opacity: .82; }
+.cen-v4-drag-layer.cen-v4-active:active { opacity: .9; }
+/* 用户在装修面板里手动关闭整个灵动岛组件 */
+.cen-v4-drag-layer.cen-v4-disabled { display: none !important; }
+.Cmtt-v4-visual {
+  position: relative;
+  width: 160px;
+  height: 40px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.02));
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 40px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15), inset 0 1px 1px rgba(255,255,255,0.3);
+  overflow: hidden;
+  margin: 0 auto;
+  transition: width 0.6s cubic-bezier(0.2, 0.8, 0.1, 1.1),
+    height 0.6s cubic-bezier(0.2, 0.8, 0.1, 1.1),
+    background 0.4s ease, border 0.4s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+/* 浅色主题下：玻璃描边加深、底色提亮，保证可见 */
+.cen-v4-drag-layer[data-theme="warm"] .Cmtt-v4-visual,
+.cen-v4-drag-layer[data-theme="minimal"] .Cmtt-v4-visual,
+.cen-v4-drag-layer[data-theme="postcard"] .Cmtt-v4-visual,
+.cen-v4-drag-layer[data-theme="neu"] .Cmtt-v4-visual {
+  background: linear-gradient(135deg, rgba(255,255,255,0.55), rgba(255,255,255,0.25));
+  border: 1px solid rgba(255,255,255,0.65);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12), inset 0 1px 1px rgba(255,255,255,0.7);
+}
+.Cmtt-v4-visual.censy-v4-expanded {
+  width: 320px;
+  height: 300px;
+  background: linear-gradient(135deg, rgba(20,20,25,0.4), rgba(10,10,15,0.2));
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 1px 1px rgba(255,255,255,0.1);
+}
+.Tt-v4-header {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 40px;
+  cursor: grab;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+}
+.Tt-v4-header:active { cursor: grabbing; }
+.Tt-v4-drag-line {
+  width: 40px; height: 4px;
+  background: rgba(255,255,255,0.5);
+  border-radius: 2px;
+  margin: 0 auto;
+  transition: width 0.3s ease, opacity 0.4s ease;
+  box-shadow: 0 0 8px rgba(255,255,255,0.2);
+}
+.Cmtt-v4-visual.censy-v4-expanded .Tt-v4-drag-line { width: 60px; background: rgba(255,255,255,0.3); }
+.Cmtt-v4-visual.censy-v4-playing .Tt-v4-drag-line { opacity: 0; pointer-events: none; }
+.mini-v4-eq {
+  position: absolute;
+  top: 50%; transform: translateY(-50%);
+  display: flex; gap: 3px;
+  opacity: 1; transition: opacity 0.3s;
+  margin: 0 auto;
+}
+.Cmtt-v4-visual.censy-v4-expanded .mini-v4-eq { opacity: 0; pointer-events: none; }
+.mini-v4-bar { width: 3px; height: 10px; background: #fff; border-radius: 2px; animation: cen-bounce 1s ease-in-out infinite; animation-play-state: paused; }
+.cen-v4-drag-layer[data-theme="warm"] .mini-v4-bar,
+.cen-v4-drag-layer[data-theme="minimal"] .mini-v4-bar,
+.cen-v4-drag-layer[data-theme="postcard"] .mini-v4-bar,
+.cen-v4-drag-layer[data-theme="neu"] .mini-v4-bar { background: #6b6259; }
+.Cmtt-v4-visual.censy-v4-playing .mini-v4-bar { animation-play-state: running; background: #f472b6; box-shadow: 0 0 5px rgba(244,114,182,0.6); }
+.mini-v4-bar:nth-child(1) { animation-delay: 0s; }
+.mini-v4-bar:nth-child(2) { animation-delay: 0.2s; }
+.mini-v4-bar:nth-child(3) { animation-delay: 0.4s; }
+.mini-v4-bar:nth-child(4) { animation-delay: 0.1s; }
+@keyframes cen-bounce { 0%, 100% { height: 6px; } 50% { height: 18px; } }
+.Mg-v4-avatars {
+  position: absolute;
+  top: 50px;
+  width: 100%;
+  height: 80px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  opacity: 0;
+  transform: scale(0.5) translateY(-20px);
+  transition: all 0.5s cubic-bezier(0.2, 0.8, 0.1, 1.1);
+  pointer-events: none;
+}
+.Cmtt-v4-visual.censy-v4-expanded .Mg-v4-avatars { opacity: 1; transform: scale(1) translateY(0); }
+.Cmtt-v4-visual.censy-list-open .Mg-v4-avatars { opacity: 0; transform: scale(0.8) translateY(-10px); pointer-events: none; }
+.Sx-v4-wire {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 180px; height: 2px;
+  background: rgba(255,255,255,0.1);
+  z-index: var(--z-base); margin: 0 auto;
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.censy-v4-playing .Sx-v4-wire { width: 60px; background: rgba(255,255,255,0.6); box-shadow: 0 0 10px rgba(255,255,255,0.5); }
+.Z_CONFIG-v4-avatar {
+  position: absolute;
+  top: 50%;
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.4);
+  background-size: cover; background-position: center;
+  background-color: #888;
+  z-index: var(--z-float); margin: 0 auto;
+  transform: translateY(-50%);
+  transition: left 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+    right 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.6s ease, border-color 0.6s;
+}
+.Z_CONFIG-v4-avatar.left { left: 20px; }
+.Z_CONFIG-v4-avatar.right { right: 20px; }
+.censy-v4-playing .Z_CONFIG-v4-avatar { box-shadow: 0 0 25px rgba(255,255,255,0.3); border-color: rgba(255,255,255,0.8); }
+.censy-v4-playing .Z_CONFIG-v4-avatar.left { left: 90px; }
+.censy-v4-playing .Z_CONFIG-v4-avatar.right { right: 90px; }
+.cen-v4-playlist-box {
+  position: absolute;
+  top: 45px;
+  left: 15px; right: 15px; bottom: 100px;
+  background: rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 8px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  transition: all 0.4s cubic-bezier(0.2, 0.8, 0.1, 1);
+}
+.Cmtt-v4-visual.censy-list-open .cen-v4-playlist-box { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.cen-v4-playlist-box::-webkit-scrollbar { width: 2px; }
+.cen-v4-playlist-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 2px; }
+.cen-v4-song-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: rgba(255,255,255,0.6);
+  font-size: 12px;
+  cursor: pointer;
+  transition: 0.2s;
+  margin: 0 auto; width: 100%; box-sizing: border-box;
+}
+.cen-v4-song-item:hover { background: rgba(255,255,255,0.1); color: #fff; }
+.cen-v4-song-item.is-active { background: rgba(255,71,133,0.15); color: #ff4785; font-weight: bold; border-left: 2px solid #ff4785; text-shadow: 0 0 8px rgba(255,71,133,0.4); }
+.cen-v4-control-hub {
+  position: absolute;
+  bottom: 20px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.4s ease 0.1s;
+  pointer-events: none;
+  margin: 0 auto;
+}
+.Cmtt-v4-visual.censy-v4-expanded .cen-v4-control-hub { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.Ks-v4-info { margin-bottom: 16px; text-align: center; width: 80%; margin: 0 auto 16px auto; transition: 0.3s; }
+.Cmtt-v4-visual.censy-list-open .Ks-v4-info { opacity: 0; pointer-events: none; height: 0; margin-bottom: 0; }
+.Ks-v4-title { font-size: 16px; font-weight: 600; color: #fff; letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 0 2px 6px rgba(0,0,0,0.8); margin: 0 auto;}
+.Ks-v4-artist { font-size: 11px; color: rgba(255,255,255,0.7); margin: 4px auto 0 auto; }
+.Ks-v4-row { display: flex; align-items: center; justify-content: center; gap: 16px; width: 90%; margin: 0 auto; }
+.cen-v4-btn { background: transparent; border: none; outline: none; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; transition: 0.2s; opacity: 0.7; padding: 0; margin: 0 auto; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4)); }
+.cen-v4-drag-layer[data-theme="warm"] .cen-v4-btn,
+.cen-v4-drag-layer[data-theme="minimal"] .cen-v4-btn,
+.cen-v4-drag-layer[data-theme="postcard"] .cen-v4-btn,
+.cen-v4-drag-layer[data-theme="neu"] .cen-v4-btn { color: #4a4036; }
+.cen-v4-btn:hover { opacity: 1; transform: scale(1.1); filter: drop-shadow(0 0 8px rgba(255,255,255,0.4)); }
+.cen-v4-btn:active { transform: scale(0.9); }
+.cen-v4-btn svg { width: 20px; height: 20px; fill: currentColor; }
+.cen-v4-play-core { width: 46px; height: 46px; background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); border-radius: 50%; border: 1px solid rgba(255,255,255,0.3); box-shadow: inset 0 2px 5px rgba(255,255,255,0.2), 0 4px 12px rgba(0,0,0,0.3); margin: 0 auto; }
+.cen-v4-play-core svg { width: 22px; height: 22px; }
+.cen-v4-btn-like.is-liked svg { fill: #ff4785 !important; stroke: #ff4785 !important; filter: drop-shadow(0 0 8px rgba(255,71,133,0.6)); }
+.cen-v4-btn-list.is-open svg { fill: #ff4785; }
+.cen-v4-watermark { position: absolute; bottom: 8px; font-size: 8px; color: rgba(255,255,255,0.2); letter-spacing: 2px; width: 100%; text-align: center; pointer-events: none; margin: 0 auto; }
+/* 列表为空时的占位 */
+.cen-v4-empty { color: rgba(255,255,255,0.5); font-size: 12px; text-align: center; padding: 20px 0; }
+/* ==========================================================================
+   WorkBuddy 视觉 / 交互统一补丁 v1
+   覆盖任务：#13 圆角阴影 token / #14 底栏弹性切换 / #16 空状态插画 /
+             #17 表单聚焦发光 / #18 按压缩放 / #20 主题平滑过渡 / #21 safe-area
+   定位：全部为「增强 + token 化」，只补既有规则没覆盖的部分，不改动配色与语义。
+   放在文档末尾，优先级最高，便于整体开关与回滚。
+   ========================================================================== */
 
+/* ---- #13 圆角/阴影 token 收敛（补 token 与浮起态）----
+   源码里 260+ 处散写的 border-radius 字面量已统一为 var(--radius*)（取值与原字面量
+   一一对应，视觉零变化，但现在主题可整体覆盖）。这里补齐此前缺失的浮起阴影 token。 */
+:root{
+  --shadow-hover:0 8px 24px rgba(0,0,0,.12);
+  --ring:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent);
+  /* #21 safe-area 兜底：env() 在不支持的环境会让整条声明失效，
+     进而让 calc(6px + var(--safe-bottom)) 整体塌陷。补 0px 回退值。 */
+  --safe-bottom:env(safe-area-inset-bottom, 0px);
+}
+html[data-theme="dark"]{ --shadow-hover:0 8px 26px rgba(0,0,0,.42); }
+/* 卡片浮起：仅对真·指针设备生效，触屏端不做 hover 残留 */
+@media (hover:hover) and (pointer:fine){
+  .card:hover,.feed-card:hover,.stat-card:hover,.kb-card:hover,.mini-card:hover{
+    box-shadow:var(--shadow-hover);
+  }
+}
+
+/* ---- #14 底部导航切换弹性过渡 ---- */
+.bot-tab .bt-item{
+  transition:color .22s var(--ease), transform .3s var(--ease-spring);
+}
+.bot-tab .bt-item:active{ transform:scale(.9); }
+.bot-tab .bt-item.active{ color:var(--accent-ink); font-weight:600; }
+.bot-tab .bt-item.active .bt-ic{ transform:translateY(-3px) scale(1.16); }
+@keyframes btPop{
+  0%{ transform:translateY(-3px) scale(1); }
+  45%{ transform:translateY(-5px) scale(1.32); }
+  100%{ transform:translateY(-3px) scale(1.16); }
+}
+/* .just-switched 由 renderBotTab() 在 active 由假变真时打上，下次切走自动清除 */
+.bot-tab .bt-item.active.just-switched .bt-ic{ animation:btPop .44s var(--ease-spring); }
+
+/* ---- #16 空状态插画：轻微浮动，避免死板的静态图标 ---- */
+.es-illu .es-ic{ animation:esFloat 4.2s ease-in-out infinite; }
+@keyframes esFloat{ 0%,100%{transform:translateY(0);} 50%{transform:translateY(-5px);} }
+.es-deco{ animation:esTwinkle 3.4s ease-in-out infinite; }
+@keyframes esTwinkle{ 0%,100%{opacity:.5;transform:scale(.92);} 50%{opacity:1;transform:scale(1.06);} }
+
+/* ---- #17 表单输入框聚焦外发光 ----
+   只作用于「可填写」控件，排除滑块/开关/取色器等无边框控件，避免发光环突兀。
+   ⚠️ 下面必须带 !important：文件里 15175 / 16441 有两份重复的
+   input:focus{box-shadow:0 0 0 3px rgba(0,0,0,0.05) !important}，
+   不带 !important 会被它们盖掉（那两处是历史遗留的重复块，不动，这里后置覆盖即可）。 */
+input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="file"]):focus,
+textarea:focus,select:focus,[contenteditable="true"]:focus{
+  outline:none!important;
+  border-color:color-mix(in srgb,var(--accent) 62%, var(--glass-border))!important;
+  box-shadow:var(--ring)!important;
+}
+
+/* ---- #18 可点击卡片的按压反馈 ----
+   触屏没有 hover，按压缩放是唯一「点到了」的即时反馈。 */
+.feed-card,.cell,.stat-card,.kb-card,.mini-card,.dash-item{
+  transition:transform .18s var(--ease-spring), box-shadow .25s var(--ease);
+  -webkit-tap-highlight-color:transparent;
+}
+.feed-card:active,.cell:active,.stat-card:active,.kb-card:active,.mini-card:active,.dash-item:active{
+  transform:scale(.972);
+}
+
+/* ---- #20 主题切换平滑过渡 ----
+   只在切换瞬间给 <html> 挂 .theme-anim（约 400ms 后由 JS 摘掉），
+   避免常驻通配过渡拖慢日常滚动与渲染。 */
+html.theme-anim,html.theme-anim *{
+  transition:background-color .34s var(--ease), color .34s var(--ease),
+             border-color .34s var(--ease), box-shadow .34s var(--ease),
+             fill .34s var(--ease), stroke .34s var(--ease)!important;
+}
+/* 背景大图/毛玻璃等不适合参与颜色过渡的元素，用 .no-theme-anim 排除 */
+html.theme-anim .no-theme-anim,html.theme-anim .no-theme-anim *{ transition:none!important; }
+
+/* ---- #22 字体就绪标记：外部字体未落地前先让装饰性文字稳住，减少 FOUT 抖动 ---- */
+html:not(.fonts-ready) .es-illu .es-ic{ opacity:.85; }
+
+/* ---- 无障碍：系统开启「减少动效」时全部关掉 ---- */
+@media (prefers-reduced-motion:reduce){
+  .es-illu .es-ic,.es-deco,.bot-tab .bt-item.active.just-switched .bt-ic{ animation:none!important; }
+  html.theme-anim,html.theme-anim *{ transition:none!important; }
+  .feed-card,.cell,.stat-card,.kb-card,.mini-card,.dash-item,.bot-tab .bt-item{ transition:none!important; }
+}
+
+/* ---- #7 大屏适配（平板 / 桌面）----
+   内容区 .app 与所有固定层（底栏、迷你播放条、Toast 等）共用 --app-w 变量，
+   只改这一个变量即可同步变宽，避免「内容区变宽了、底栏还是 480px」的错位。
+   注：.bento 是内容量较大的 Bento 卡片，2 列直接跳 4 列会太挤，这里取 3 / 4 列。 */
+@media (min-width: 640px){
+  :root{ --app-w:640px; }
+  .grid{ grid-template-columns:repeat(4,1fr); }
+  .bento{ grid-template-columns:repeat(3,1fr); }
+}
+@media (min-width: 1024px){
+  :root{ --app-w:800px; }
+  .grid{ grid-template-columns:repeat(6,1fr); }
+  .bento{ grid-template-columns:repeat(4,1fr); }
+}

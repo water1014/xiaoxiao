@@ -1,0 +1,325 @@
+@charset "UTF-8";
+/* ============================================================
+   笑笑养成记 · 工作台 —— 样式分片 10/15
+   文件：css/10-profile.css
+   来源：原 index.html 第 11207–11520 行
+   内容：我的页：名片 SVG 环形进度 / 状态卡 / 数据看板 / 成就墙 / 全功能入口 / 全部栏目
+   ------------------------------------------------------------
+   ⚠️ 分片按【原文件顺序】物理切分，层叠顺序与原来的单文件完全一致。
+      修改样式请就地编辑对应分片；不要跨分片调整引入顺序，
+      否则会改变 CSS 层叠优先级，造成难以定位的样式回退。
+   ============================================================ */
+/* ===== 我的页：名片右侧 SVG 环形进度 ===== */
+.pc-ring-wrap{
+  flex-shrink:0;
+  position:relative;
+  width:56px;
+  height:56px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  filter:drop-shadow(0 2px 6px rgba(0,0,0,.08));
+}
+.pc-ring{
+  width:56px;
+  height:56px;
+  transform:rotate(-90deg);
+}
+.pc-ring circle{
+  fill:none;
+}
+.pc-ring .pcr-bg{
+  stroke:var(--glass-border);
+  stroke-width:4px;
+}
+.pc-ring .pcr-fill{
+  stroke:url(#pcRingGrad);
+  stroke-width:4px;
+  stroke-linecap:round;
+  transition:stroke-dashoffset .8s cubic-bezier(.34,1.56,.64,1);
+}
+.pc-ring-val .pcrv-num,.ring-number{
+  font-size:var(--fs-body);
+  font-weight:700;
+  color:var(--ink);
+  font-family:var(--font-en);
+  line-height:1;
+}
+.pc-ring-val .pcrv-lb{
+  font-size:8px;
+  color:var(--gray);
+  margin-top:1px;
+}
+/* ===== 笑笑状态卡（参考 简约状态栏 / 简约磨砂状态栏：磨砂折叠面板 + 好感进度 + 气泡） ===== */
+/* ===== 我的页：数据看板 4 卡 ===== */
+.stats-row{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:var(--s-2);
+  margin-bottom:var(--s-3);
+}
+.stat-card{
+  background:var(--glass-bg);
+  -webkit-backdrop-filter:blur(var(--blur)) saturate(1.2);
+  backdrop-filter:blur(var(--blur)) saturate(1.2);
+  border:1px solid var(--mat-border,var(--glass-border));
+  border-radius:var(--radius);
+  padding:13px var(--s-2);
+  text-align:center;
+  box-shadow:var(--mat-shadow,var(--shadow));
+}
+/* 今日成果简报 */
+.today-brief{
+  background:var(--glass-bg);
+  -webkit-backdrop-filter:blur(var(--blur)) saturate(1.2);
+  backdrop-filter:blur(var(--blur)) saturate(1.2);
+  border:1px solid var(--mat-border,var(--glass-border));
+  border-radius:var(--radius);
+  padding:var(--s-4);
+  margin-bottom:var(--s-3);
+  box-shadow:var(--mat-shadow,var(--shadow));
+  animation:rise .3s var(--ease) both;
+}
+.today-brief .tb-date{
+  font-size:11px;
+  color:var(--gray);
+  background:var(--glass-solid);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius-sm);
+  padding:2px 9px;
+}
+.today-brief .tb-item .tbv{
+  font-size:22px;
+  font-weight:300;
+  color:var(--ink);
+  font-family:var(--font-en);
+  line-height:1;
+}
+.today-brief .tb-item .tbu{
+  font-size:11px;
+  color:var(--gray);
+  margin-top:var(--s-1);
+}
+.today-brief .tb-item.on{
+  background:linear-gradient(135deg,rgba(212,197,176,.16),var(--glass-flat));
+  border-color:var(--accent-ink);
+}
+.stat-card .sc-ic{
+  width:22px;
+  height:22px;
+  color:var(--primary-ink);
+  margin:0 auto 5px;
+  display:flex;
+}
+.stat-card .sc-ic .svg-ic{
+  width:22px;
+  height:22px;
+  margin:auto;
+}
+.stat-card .sc-val{
+  font-size:26px;
+  font-weight:300;
+  color:var(--ink);
+  line-height:1;
+  font-family:var(--font-en);
+}
+.stat-card .sc-unit{
+  font-size:11px;
+  font-weight:600;
+  color:var(--gray);
+  margin-left:1px;
+}
+.stat-card .sc-lb{
+  font-size:11px;
+  color:var(--gray);
+  margin-top:5px;
+}
+/* ===== 我的页：成就墙 / 栏目网格 通用头 ===== */
+.aw-head{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-size:15px;
+  font-weight:700;
+  color:var(--ink);
+  margin-bottom:2px;
+}
+.aw-head .aw-sub{
+  margin-left:auto;
+  font-size:11px;
+  font-weight:600;
+  color:var(--gray);
+  background:var(--glass-solid);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius-sm);
+  padding:2px 9px;
+}
+/* ===== 我的页：全功能入口网格（4 列） ===== */
+.func-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-top:var(--s-2);
+}
+.func-cell{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  padding:var(--s-4) var(--s-1);
+  background:var(--glass-flat);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius);
+  color:var(--text);
+  font-size:var(--fs-caption);
+  cursor:pointer;
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1),background .2s,box-shadow .2s;
+  animation:rise .3s var(--ease) both;
+}
+.func-cell.sink:active{
+  transform:translateY(4px) scale(.96);
+}
+.func-cell.bounce:active{
+  animation:sink-bounce .35s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes sink-bounce {
+  0%{
+    transform:translateY(0);
+  }
+  40%{
+    transform:translateY(5px) scale(.96);
+  }
+  70%{
+    transform:translateY(-2px) scale(1.02);
+  }
+  100%{
+    transform:translateY(0) scale(1);
+  }
+}
+.func-cell:nth-child(2),.func-cell:nth-child(5){
+  animation-delay:.04s;
+}
+.func-cell:nth-child(3),.func-cell:nth-child(6){
+  animation-delay:.08s;
+}
+.func-cell:nth-child(4),.func-cell:nth-child(7),.func-cell:nth-child(n/**/+9){
+  animation-delay:.12s;
+}
+/* ===== 全部栏目浏览器（弹窗） ===== */
+.allcols-card .ac-group{
+  margin-top:14px;
+}
+.ac-gt{
+  font-size:var(--fs-caption);
+  font-weight:700;
+  color:var(--accent-ink);
+  margin-bottom:2px;
+  letter-spacing:.5px;
+}
+.cell-more{
+  background:linear-gradient(135deg,color-mix(in srgb,var(--primary) 16%,var(--glass-bg)),color-mix(in srgb,var(--accent) 16%,var(--glass-bg)));
+  border-style:dashed;
+  border-color:var(--accent-ink);
+}
+.func-cell:nth-child(8){
+  animation-delay:.16s;
+}
+.func-cell:active{
+  transform:scale(.95);
+  background:var(--glass-solid);
+  box-shadow:0 4px 14px rgba(0,0,0,.08),inset 0 0 0 1px var(--accent);
+}
+.func-cell .fc-ic{
+  width:30px;
+  height:30px;
+  color:var(--primary-ink);
+}
+.func-cell .fc-ic .svg-ic{
+  width:30px;
+  height:30px;
+}
+.func-cell .fc-lb{
+  line-height:var(--lh-title);
+  text-align:center;
+}
+/* ===== 全部栏目 · 全屏新页面（充满屏幕） ===== */
+.view-allcols{
+  display:none;
+  background:radial-gradient(120% 60% at 50% -10%, color-mix(in srgb,var(--primary) 22%, transparent), transparent 60%), var(--bg);
+}
+/* 当其它主视图 active 时，强制隐藏全屏「全部栏目」，避免多个 view 同时可见 */
+.ac-page-head{
+  padding:26px var(--s-5) 14px;
+  text-align:center;
+  position:relative;
+}
+.ac-page-head::after{
+  content:"";
+  position:absolute;
+  left:var(--s-5);
+  right:var(--s-5);
+  bottom:0;
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--glass-border),transparent);
+}
+.ac-ph-kick{
+  font-family:var(--font-en);
+  font-size:11px;
+  letter-spacing:4px;
+  color:var(--accent-ink);
+  text-transform:uppercase;
+  opacity:.85;
+}
+.ac-ph-title{
+  font-family:var(--font-serif,var(--font-en));
+  font-size:26px;
+  font-weight:800;
+  color:var(--ink);
+  letter-spacing:var(--letter-wide);
+  margin-top:6px;
+}
+.ac-ph-sub{
+  font-size:var(--fs-caption);
+  color:var(--gray);
+  margin-top:6px;
+  letter-spacing:var(--letter-wide);
+}
+.ac-scroll{
+  padding:14px var(--s-4) 0;
+}
+.ac-group{
+  margin-bottom:18px;
+}
+.ac-gt{
+  display:flex;
+  align-items:baseline;
+  gap:var(--s-2);
+  font-size:15px;
+  font-weight:800;
+  color:var(--ink);
+  margin-bottom:10px;
+  letter-spacing:.5px;
+}
+.ac-gt-en{
+  font-family:var(--font-en);
+  font-size:10px;
+  letter-spacing:2px;
+  color:var(--accent-ink);
+  border:1px solid var(--glass-border);
+  border-radius:6px;
+  padding:1px 6px;
+  text-transform:uppercase;
+  font-weight:600;
+}
+.ac-scroll .func-grid{
+  gap:10px;
+}
+.ac-scroll .func-cell{
+  min-height:84px;
+  justify-content:center;
+  background:var(--glass-flat);
+}
+.ac-scroll .func-cell .fc-ic,.ac-scroll .func-cell .fc-ic .svg-ic{
+  width:34px;
+  height:34px;
+}

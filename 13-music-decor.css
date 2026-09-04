@@ -1,0 +1,696 @@
+@charset "UTF-8";
+/* ============================================================
+   笑笑养成记 · 工作台 —— 样式分片 13/15
+   文件：css/13-music-decor.css
+   来源：原 index.html 第 13489–14173 行
+   内容：空灵风音乐播放器装饰层 + ins 杂志手账 + 减弱动效兜底
+   ------------------------------------------------------------
+   ⚠️ 分片按【原文件顺序】物理切分，层叠顺序与原来的单文件完全一致。
+      修改样式请就地编辑对应分片；不要跨分片调整引入顺序，
+      否则会改变 CSS 层叠优先级，造成难以定位的样式回退。
+   ============================================================ */
+/* ===== 空灵风音乐播放器装饰层（融合自「音乐播放器」docx 第一版 · 去外部字体依赖） ===== */
+/* 作用域隔离在 .eth-player 内，仅增强音乐版头，不污染其它组件 */
+.eth-player{
+  position:relative;
+  overflow:hidden;
+  border-radius:var(--radius-l);
+}
+/* 修复：原 .eth-player 无高度，而 censy 左右面板是 position:absolute + height:100%，
+     包含块高度为 0 → 版头整体塌陷，时钟/曲目卡/播放按钮溢出并盖在下方
+     NOW PLAYING 与「正在播放」卡片上（播放时尤其明显）。
+     给容器显式高度 + 深色底（白字才看得清），面板用 px 内距避免宽屏溢出。 */
+.eth-player{
+  height:280px;
+  min-height:280px;
+  background:linear-gradient(135deg,#2a3a56 0%,#1b2437 55%,#33445f 100%);
+}
+.eth-player .censy-master-container{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+}
+.eth-player .censy-left-panel,.eth-player .censy-right-panel{
+  padding:10px var(--s-3) var(--s-3) var(--s-3);
+  height:100%;
+}
+.eth-player .c-clock{
+  font-size:2.1rem;
+}
+.eth-player .eth-stream{
+  position:absolute;
+  width:150%;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(156,178,200,.7),rgba(202,217,245,.9),transparent);
+  opacity:.55;
+  pointer-events:none;
+  z-index:3;
+}
+.eth-player .eth-stream.top{
+  top:0;
+  left:-150%;
+  animation:eth-scanRight 6s ease-in-out infinite;
+}
+.eth-player .eth-stream.bottom{
+  bottom:0;
+  right:-150%;
+  animation:eth-scanLeft 6s ease-in-out infinite 3s;
+}
+.eth-player .eth-particles{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:3;
+}
+.eth-player .eth-particle{
+  position:absolute;
+  width:2px;
+  height:2px;
+  background:#cad9f5;
+  border-radius:50%;
+  box-shadow:0 0 6px #cad9f5;
+  opacity:0;
+}
+.eth-player .eth-particle.p1{
+  left:10%;
+  bottom:10%;
+  animation:eth-floatUp 4s linear infinite 0s;
+}
+.eth-player .eth-particle.p2{
+  left:30%;
+  bottom:20%;
+  animation:eth-floatUp 5s linear infinite 1s;
+}
+.eth-player .eth-particle.p3{
+  left:60%;
+  bottom:5%;
+  animation:eth-floatUp 4.5s linear infinite 2s;
+}
+.eth-player .eth-particle.p4{
+  left:80%;
+  bottom:30%;
+  animation:eth-floatUp 6s linear infinite .5s;
+}
+.eth-player .eth-particle.p5{
+  left:90%;
+  bottom:15%;
+  animation:eth-floatUp 5.5s linear infinite 1.5s;
+}
+/* 轨道环控制按钮（替换原方块播放钮的视觉） */
+.eth-nexus{
+  position:relative;
+  width:52px;
+  height:52px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  cursor:pointer;
+  user-select:none;
+  flex-shrink:0;
+  margin:0 auto;
+  transition:transform .5s cubic-bezier(.175,.885,.32,1.275);
+}
+.eth-nexus .eth-orbit{
+  position:absolute;
+  transition:all .6s cubic-bezier(.175,.885,.32,1.275);
+  border-radius:2px;
+  transform:rotate(45deg);
+}
+.eth-nexus .eth-orbit.outer{
+  width:100%;
+  height:100%;
+  border:1px solid rgba(84,98,130,.4);
+  border-top:1px solid #9cb2c8;
+  border-bottom:1px solid #9cb2c8;
+  border-radius:50%;
+  animation:eth-rotate-rhombus 8s linear infinite;
+  z-index:var(--z-base);
+}
+.eth-nexus .eth-orbit.inner{
+  width:70%;
+  height:70%;
+  border:1px dashed rgba(156,178,200,.6);
+  border-radius:1px;
+  animation:eth-rotate-rhombus 5s linear infinite reverse;
+  z-index:var(--z-base);
+}
+.eth-nexus .eth-playicon{
+  font-size:15px;
+  color:#cad9f5;
+  text-shadow:0 0 8px rgba(202,217,245,.6);
+  z-index:var(--z-float);
+  transition:transform .2s ease;
+}
+/* 频谱可视化（纯 CSS 装饰，不接 Web Audio 分析，避免性能开销） */
+.eth-spectrum{
+  display:flex;
+  align-items:flex-end;
+  gap:3px;
+  height:26px;
+}
+.eth-spectrum span{
+  width:3px;
+  background:linear-gradient(to top,rgba(156,178,200,.5),#cad9f5);
+  border-radius:2px;
+  animation:eth-pulse 1.1s ease-in-out infinite;
+}
+.eth-spectrum span:nth-child(1){
+  animation-delay:0s;
+  height:var(--s-2);
+}
+.eth-spectrum span:nth-child(2){
+  animation-delay:.15s;
+  height:var(--s-4);
+}
+.eth-spectrum span:nth-child(3){
+  animation-delay:.3s;
+  height:22px;
+}
+.eth-spectrum span:nth-child(4){
+  animation-delay:.45s;
+  height:var(--s-3);
+}
+.eth-spectrum span:nth-child(5){
+  animation-delay:.6s;
+  height:var(--s-5);
+}
+.eth-spectrum span:nth-child(6){
+  animation-delay:.75s;
+  height:10px;
+}
+.eth-spectrum span:nth-child(7){
+  animation-delay:.9s;
+  height:18px;
+}
+.eth-spectrum span:nth-child(8){
+  animation-delay:1.05s;
+  height:14px;
+}
+@keyframes eth-scanRight {
+  0%,100%{
+    transform:translateX(0);
+  }
+  50%{
+    transform:translateX(60%);
+  }
+}
+@keyframes eth-scanLeft {
+  0%,100%{
+    transform:translateX(0);
+  }
+  50%{
+    transform:translateX(-60%);
+  }
+}
+@keyframes eth-floatUp {
+  0%{
+    transform:translateY(0) scale(1);
+    opacity:0;
+  }
+  20%{
+    opacity:.9;
+  }
+  80%{
+    opacity:.7;
+  }
+  100%{
+    transform:translateY(-60px) scale(.4);
+    opacity:0;
+  }
+}
+@keyframes eth-rotate-rhombus {
+  0%{
+    transform:rotate(45deg);
+  }
+  100%{
+    transform:rotate(405deg);
+  }
+}
+@keyframes eth-pulse {
+  0%,100%{
+    height:6px;
+    opacity:.5;
+  }
+  50%{
+    height:22px;
+    opacity:1;
+  }
+}
+.lz-load-more{
+  display:block;
+  width:100%;
+  margin:10px 0 2px;
+  padding:9px 0;
+  border:1px dashed rgba(255,255,255,.3);
+  border-radius:var(--radius-s);
+  background:rgba(255,255,255,.04);
+  color:rgba(255,255,255,.8);
+  font-size:var(--fs-caption);
+  cursor:pointer;
+  transition:background .2s;
+}
+.lz-load-more:active{
+  background:rgba(255,255,255,.1);
+}
+/* —— 心情手账 ins 双版本卡片 —— */
+.mood-list{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:var(--cell-gap);
+}
+.mood-item{
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  gap:var(--s-2);
+  background:var(--glass-flat);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius);
+  padding:var(--s-3);
+  min-height:128px;
+  cursor:pointer;
+  transition:transform .2s var(--ease),box-shadow .2s var(--ease);
+  animation:rise .3s var(--ease) both;
+  overflow:hidden;
+}
+.mood-item:active{
+  transform:scale(.97);
+  box-shadow:0 4px 14px rgba(0,0,0,.08),inset 0 0 0 1px var(--accent);
+}
+.mood-item .mood-e{
+  font-size:30px;
+  line-height:1;
+  font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji","Twemoji Mozilla",emoji,serif;
+}
+.mood-item .mood-d{
+  font-size:11px;
+  color:var(--gray);
+  font-weight:600;
+  letter-spacing:.5px;
+}
+.mood-item .mood-t{
+  font-size:var(--fs-caption);
+  color:var(--text);
+  line-height:1.5;
+  word-break:break-all;
+  display:block;
+  max-height:4.5em;
+  overflow:hidden;
+  flex:1;
+}
+@supports (-webkit-line-clamp:3) {
+  .mood-item .mood-t{
+    display:-webkit-box;
+    -webkit-line-clamp:3;
+    -webkit-box-orient:vertical;
+  }
+}
+.mood-item .mood-x{
+  align-self:flex-end;
+  font-size:11px;
+  color:var(--gray);
+  opacity:0;
+  transition:opacity .2s;
+  margin-top:auto;
+}
+/* ins 双版本：偶数项图片卡（大表情占位），奇数项文字卡 */
+.mood-item:nth-child(even){
+  background:linear-gradient(135deg,var(--glass-flat),color-mix(in srgb,var(--accent) 12%,var(--glass-flat)));
+}
+.mood-item:nth-child(even) .mood-e{
+  font-size:38px;
+  text-align:center;
+  margin-top:auto;
+  margin-bottom:auto;
+}
+/* —— 全部栏目页头：英文标签 + 虚线档案感 —— */
+.ac-page-head{
+  position:relative;
+  padding:var(--s-2) var(--s-1) 14px;
+  margin-bottom:var(--gap);
+  border-bottom:1px dashed var(--glass-border);
+}
+.ac-ph-kick{
+  font-family:var(--font-en,serif);
+  font-size:11px;
+  letter-spacing:4px;
+  text-transform:uppercase;
+  color:var(--gray);
+  margin-bottom:6px;
+}
+.ac-ph-title{
+  font-size:var(--fs-h2);
+  font-weight:800;
+  color:var(--ink);
+  letter-spacing:.5px;
+}
+.ac-ph-sub{
+  font-size:var(--fs-caption);
+  color:var(--gray);
+  margin-top:var(--s-1);
+}
+/* —— 全屏工具开关：番茄钟/呼吸弹窗充满屏幕（request 3，默认关） —— */
+body.tool-fullscreen .modal-mask{
+  align-items:stretch;
+  justify-content:center;
+}
+body.tool-fullscreen .modal{
+  width:100%;
+  max-width:none;
+  height:100%;
+  max-height:100vh;
+  border-radius:0;
+  padding:calc(24px + env(safe-area-inset-top)) 16px calc(24px + var(--safe-bottom));
+}
+body.tool-fullscreen .focus-modal,body.tool-fullscreen .breathe-modal{
+  max-width:none;
+  margin:0 auto;
+}
+/* —— 板块组件统一和谐（各栏目风格对齐） —— */
+/* 所有栏目标题区统一节奏：返回栏 + 模块标题 + 卡片 三段间距一致 */
+.back-row{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-bottom:var(--block-gap,14px);
+  padding:0 2px;
+}
+.back-row button{
+  width:var(--s-7);
+  height:var(--s-7);
+  border-radius:50%;
+  border:1px solid var(--glass-border);
+  background:var(--glass-flat);
+  color:var(--ink);
+  font-size:var(--fs-h3);
+  line-height:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  flex-shrink:0;
+  transition:transform .2s var(--ease),background .2s;
+}
+.back-row>div{
+  font-size:15px;
+  font-weight:700;
+  color:var(--ink);
+  flex:1;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+/* 顶部栏右侧操作：图标-only，不挤压标题 */
+.back-row .edit-btn,.back-row .edit-done{
+  width:var(--s-7);
+  height:var(--s-7);
+  border-radius:50%;
+  padding:0;
+  justify-content:center;
+}
+.back-row .edit-btn svg,.back-row .edit-done svg{
+  width:var(--s-4);
+  height:var(--s-4);
+}
+/* 模块内各级标题统一 */
+.mod-h1{
+  font-size:22px;
+  font-weight:800;
+  color:var(--ink);
+  letter-spacing:.5px;
+  line-height:1.25;
+}
+/* 卡片内 h3 小图标统一尺寸/颜色（呼应主色，避免各栏目图标大小不一） */
+.card h3 .svg-ic{
+  width:var(--s-4);
+  height:var(--s-4);
+  color:var(--primary-ink);
+  flex-shrink:0;
+  stroke-width:var(--ic-stroke);
+}
+/* 各栏目的「说明/提示」类 mini-note 统一行高与边距 */
+.mini-note{
+  font-size:var(--fs-caption);
+  color:var(--gray);
+  line-height:1.7;
+  margin-top:6px;
+}
+/* 列表行（item/check-item/prog-row 等）统一间距，避免某栏目过挤或过松 */
+.item,.check-item,.prog-row{
+  gap:var(--s-3);
+}
+.item .body,.check-item .body,.prog-row .body{
+  font-size:var(--fs-body-sm);
+  color:var(--text);
+  line-height:1.5;
+}
+/* 板块内的卡片与卡片之间、板块与板块之间统一呼吸感 */
+.mod-sec{
+  margin-bottom:var(--block-gap,14px);
+}
+.mod-sec .card + .card{
+  margin-top:var(--block-gap,14px);
+}
+/* —— 舒适文字系统（依据 docx 的 letter-spacing / line-height 偏好微调） —— */
+/* 全局正文：统一行高与字距，提升阅读舒适感（黑白灰/简约风的核心） */
+.card .body,.item .body,.check-item .body,.prog-row .body, .mini-note,.mood-t,.tag-note,.feed-card .fc-tx,.note-body,.read-body,.md-body,.kb-card .kb-text{
+  line-height:1.7;
+  letter-spacing:.2px;
+}
+/* 说明/提示类文字：略小、柔和、舒适行高 */
+.mini-note{
+  font-size:var(--fs-caption);
+  color:var(--gray);
+  line-height:1.75;
+  margin-top:6px;
+}
+/* 衬线标题统一（模块标题 / 卡片标题 在 serif-title 下使用优雅衬线） */
+body.serif-title .card h3{
+  font-family:var(--font-en);
+  letter-spacing:.5px;
+  font-weight:600;
+}
+/* 英文/档案小标签统一字距，呼应 docx 的 letter-spacing */
+.ac-ph-kick,.mod-head .mod-sub,.en,.boot-quote .en,.feed-cat{
+  letter-spacing:var(--letter-wide);
+}
+/* 卡片内分割线：统一细虚线档案感（黑白明信片/简约状态栏偏好） */
+.card hr{
+  border:none;
+  border-top:1px dashed var(--glass-border);
+  margin:var(--s-3) 0;
+}
+/* —— 兼容：view 在没有 view-end 时也能靠 padding 兜底，确保底部不遮挡 —— */
+/* ===== ins日记风格杂志手账（yanj） ===== */
+/* ===== ins日记风格杂志手账（yanj · 融合官方双版本核心 + 删除增强） ===== */
+.yanj-diary-wrapper{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  padding:var(--s-1) 2px var(--s-2);
+}
+/* YJ 动画初始状态（错落位移入场，来自官方版 nth-child 节奏） */
+.yanj-row{
+  display:flex;
+  gap:14px;
+  align-items:flex-start;
+  width:100%;
+  opacity:0;
+  transition:all .9s cubic-bezier(.25,1,.5,1);
+  transform:translateY(22px);
+}
+.yanj-row:nth-child(1){
+  transform:translate(-28px,18px);
+}
+.yanj-row:nth-child(2){
+  transform:translate(28px,-18px);
+}
+.yanj-row:nth-child(3){
+  transform:translate(-22px,22px);
+}
+.yanj-row:nth-child(4){
+  transform:translate(22px,-22px);
+}
+.yanj-row.yanj-row-reverse{
+  flex-direction:row-reverse;
+}
+.yanj-row.YJ-visible{
+  opacity:1;
+  transform:translate(0,0);
+}
+/* 拍立得相框（4:3 比例，官方版） */
+.yanj-frame-container{
+  position:relative;
+  flex:0 0 auto;
+  width:104px;
+  height:78px;
+  padding:7px 7px var(--s-4);
+  background:#fbfaf7;
+  border-radius:3px;
+  box-shadow:0 6px 18px rgba(0,0,0,.18),inset 0 0 0 1px rgba(0,0,0,.04);
+  transform:rotate(-2.5deg);
+}
+.yanj-row-reverse .yanj-frame-container{
+  transform:rotate(2.5deg);
+}
+.yanj-tape{
+  position:absolute;
+  top:-9px;
+  left:50%;
+  width:46px;
+  height:var(--s-4);
+  transform:translateX(-50%) rotate(-3deg);
+  background:rgba(255,255,255,.55);
+  border:1px solid rgba(0,0,0,.06);
+  box-shadow:0 1px 3px rgba(0,0,0,.12);
+}
+.yanj-frame-inner{
+  width:100%;
+  height:100%;
+  border:.5px solid rgba(0,0,0,.12);
+  background:rgba(0,0,0,.02);
+  border-radius:1px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+.yanj-content{
+  font-size:9px;
+  font-weight:200;
+  line-height:1.7;
+  color:#3a3a3a;
+  word-break:break-word;
+  text-align:center;
+  padding:var(--s-1) 6px;
+  max-height:100%;
+  overflow:hidden;
+}
+.yanj-polaroid{
+  position:absolute;
+  right:6px;
+  bottom:18px;
+  font-size:18px;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.2));
+}
+.yanj-photo{
+  width:64px;
+  height:64px;
+  object-fit:cover;
+  border-radius:4px;
+  display:block;
+  box-shadow:0 2px 8px rgba(0,0,0,.25);
+  border:2px solid #fff;
+}
+.mood-img-row{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:10px;
+}
+.mood-img-btn{
+  padding:7px 14px;
+  border-radius:var(--radius-m);
+  font-size:var(--fs-caption);
+  font-weight:600;
+  color:var(--text);
+  background:var(--glass-flat);
+  border:1px solid var(--glass-border);
+  cursor:pointer;
+  transition:all .2s ease;
+}
+.mood-img-prev{
+  width:var(--s-8);
+  height:var(--s-8);
+  border-radius:var(--radius-s);
+  background-size:cover;
+  background-position:center;
+  border:1px solid var(--glass-border);
+}
+.yanj-del{
+  position:absolute;
+  top:3px;
+  right:3px;
+  width:var(--s-5);
+  height:var(--s-5);
+  border:none;
+  border-radius:50%;
+  background:rgba(0,0,0,.35);
+  color:#fff;
+  font-size:11px;
+  line-height:20px;
+  cursor:pointer;
+  opacity:0;
+  transition:opacity .2s;
+}
+.yanj-typo-box{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:var(--s-1);
+  padding-top:6px;
+}
+.yanj-title-item{
+  font-size:11px;
+  letter-spacing:.5px;
+  color:var(--gray);
+}
+.yanj-date{
+  font-family:var(--font-en);
+  font-size:15px;
+  font-weight:600;
+  color:var(--ink);
+  letter-spacing:var(--letter-wide);
+}
+.yanj-weather{
+  font-size:13px;
+  color:var(--text);
+}
+.yanj-index{
+  font-family:var(--font-en);
+  font-size:9px;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  color:var(--accent-ink);
+}
+/* 暗色主题下拍立得反转为深色卡片，保持协调 */
+html[data-theme="dark"] .yanj-frame-container, html[data-theme="frost"] .yanj-frame-container, html[data-theme="liquid"] .yanj-frame-container, html[data-theme="postcard"] .yanj-frame-container{
+  background:rgba(255,255,255,.06);
+  box-shadow:0 6px 18px rgba(0,0,0,.5);
+}
+html[data-theme="dark"] .yanj-frame-inner, html[data-theme="frost"] .yanj-frame-inner, html[data-theme="liquid"] .yanj-frame-inner, html[data-theme="postcard"] .yanj-frame-inner{
+  background:rgba(255,255,255,.04);
+  border-color:rgba(255,255,255,.12);
+}
+/* 播放器控件里的变速/收藏按钮与现有按钮同宽 */
+.music-ctrl button#mSpeedBtn,.music-ctrl button#mLikeBtn{
+  padding:0 10px;
+  font-size:13px;
+}
+/* ===== 减弱动效：全局兜底（修复 #7）=====
+     项目共 72 个自定义 @keyframes（67 个被 animation 实际引用）。此前 10 处
+     @media (prefers-reduced-motion) 只按「类名」禁用了 .hero-breath / .pc-avatar / .sk /
+     .ach-ribbon / body::after 等少数几个，其余大量动画（spin / pulse / bgDrift / floaty /
+     ynBreath / splash-* / hr-* / eth-* ...）在用户开启系统「减弱动效」后仍在运行。
+     这里做一次全局兜底：用极小 duration + 单次迭代收敛所有动画与过渡。
+     采用 1ms 而非 animation:none，是为了让 animationend / transitionend 事件仍能正常触发，
+     避免依赖这些事件驱动后续逻辑的 JS 卡死。 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after{
+    animation-duration:1ms!important;
+    animation-delay:0ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:1ms!important;
+    transition-delay:0ms!important;
+    scroll-behavior:auto!important;
+  }
+}
+/* 裂图兜底工具类：给 <img> 加 onerror="this.classList.add('img-broken')" 即可在图片加载失败时显示占位，避免破图破坏布局。仅对标记元素生效，不影响其它图片外观。 */
+.img-broken{
+  object-fit:contain;
+  background:var(--action-bg);
+  border:1px dashed var(--line);
+  min-height:var(--s-4);
+}

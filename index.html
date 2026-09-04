@@ -27,33 +27,33 @@
      单文件版本备份见 .codebuddy/artifact/index.html.bak
      ============================================================ -->
 <!-- ① 全局变量 / Design Tokens（8pt 网格 + 排版 + 主题材质纹理） -->
-<link rel="stylesheet" href="css/01-tokens.css" />
+<link rel="stylesheet" href="01-tokens.css" />
 <!-- ② 通用组件 / 工具类 + ③ 主题 + ④ 材质 + ⑤ 音乐播放器基础 + ⑥ 动画 -->
-<link rel="stylesheet" href="css/02-core.css" />
+<link rel="stylesheet" href="02-core.css" />
 <!-- 材质系统（平面/清透/玻璃）+ 纹理层 + 毛玻璃总开关 + 排版统一 -->
-<link rel="stylesheet" href="css/03-material.css" />
+<link rel="stylesheet" href="03-material.css" />
 <!-- 心情日记 / 心情日历 / 番茄钟 / 呼吸放松 / 灵感册 / 今日灵感 / 海水变蓝 / 生理期 -->
-<link rel="stylesheet" href="css/04-modules-life.css" />
+<link rel="stylesheet" href="04-modules-life.css" />
 <!-- 首页编辑模式（拖拽排序） -->
-<link rel="stylesheet" href="css/05-home-edit.css" />
+<link rel="stylesheet" href="05-home-edit.css" />
 <!-- 三个核心专栏增强样式 -->
-<link rel="stylesheet" href="css/06-columns.css" />
+<link rel="stylesheet" href="06-columns.css" />
 <!-- 4 格预览图 + 首页栏目配图（黑白明信片缩略图） -->
-<link rel="stylesheet" href="css/07-preview-4.css" />
+<link rel="stylesheet" href="07-preview-4.css" />
 <!-- 清音听雨阁 · 音乐播放器 -->
-<link rel="stylesheet" href="css/08-music-player.css" />
+<link rel="stylesheet" href="08-music-player.css" />
 <!-- 记账本（金玉收支账）+ 侧边栏分组导航 + 智能研习社 + 快速操作 sheet -->
-<link rel="stylesheet" href="css/09-ledger.css" />
+<link rel="stylesheet" href="09-ledger.css" />
 <!-- 我的页：名片 SVG 环形进度 / 状态卡 / 数据看板 / 成就墙 / 全功能入口 / 全部栏目 -->
-<link rel="stylesheet" href="css/10-profile.css" />
+<link rel="stylesheet" href="10-profile.css" />
 <!-- 统一组件节奏（间距 / 长度 / 舒适感）+ ins 日记毛玻璃手账卡 -->
-<link rel="stylesheet" href="css/11-components.css" />
+<link rel="stylesheet" href="11-components.css" />
 <!-- 移动端底部 tab / 可安装引导条 / 过渡动画 / 骨架屏 / 早安复盘弹窗 / Phase C 组件 / A1 按钮 / 视频小窗 -->
-<link rel="stylesheet" href="css/12-mobile-tabs.css" />
+<link rel="stylesheet" href="12-mobile-tabs.css" />
 <!-- 空灵风音乐播放器装饰层 + ins 杂志手账 + 减弱动效兜底 -->
-<link rel="stylesheet" href="css/13-music-decor.css" />
+<link rel="stylesheet" href="13-music-decor.css" />
 <!-- 各组件补丁块：文排刮擦 / MD 美化 / Neo 状态栏 / 简约状态栏 / 归档 / 播放器 / 体验增强 / 美学精修 1-3 -->
-<link rel="stylesheet" href="css/14-patches.css" />
+<link rel="stylesheet" href="14-patches.css" />
 <!-- ⚠️ 以下 4 个 style 是 JS 运行时写入的容器，必须留在 HTML 内，不能外置成文件：
      #card-style        → applyCardStyle() 写入的卡片自定义样式
      #user-style        → applyUserStyle() 写入的用户自定义 CSS（美化设置里的「自定义 CSS」）
@@ -388,44 +388,44 @@ html[data-theme="minimal"] body::before{
 </div>
 
 <!-- 常量数据 + 简约线条图标库 + 数据看板聚合 -->
-<script src="js/01-constants.js" charset="utf-8"></script>
+<script src="01-constants.js" charset="utf-8"></script>
 <!-- 妆点美意坊默认 CSS / 字体预设 / 全局 state / 备份与重置 -->
-<script src="js/02-state.js" charset="utf-8"></script>
+<script src="02-state.js" charset="utf-8"></script>
 <!-- 工具函数 + 操作历史撤销栈 + 语音输入 + 图片外置存储 + 封面调整编辑器 -->
-<script src="js/03-utils.js" charset="utf-8"></script>
+<script src="03-utils.js" charset="utf-8"></script>
 <!-- 妆点美意坊（样式/背景/字体/存档）+ 全局背景纸 + 主题跟随系统/时间 -->
-<script src="js/04-decor.js" charset="utf-8"></script>
+<script src="04-decor.js" charset="utf-8"></script>
 <!-- 对比度工具 + 备份 + 开机 + 导航（一级/二级分组） -->
-<script src="js/05-boot.js" charset="utf-8"></script>
+<script src="05-boot.js" charset="utf-8"></script>
 <!-- 通用精致组件 JS（Phase C）+ 视图级监听器/网络请求统一回收 -->
-<script src="js/06-components.js" charset="utf-8"></script>
+<script src="06-components.js" charset="utf-8"></script>
 <!-- 数据看板 + 首页 + 栏目配图 + 通用弹窗 + 番茄钟 + 呼吸放松 + 灵感册 -->
-<script src="js/07-home.js" charset="utf-8"></script>
+<script src="07-home.js" charset="utf-8"></script>
 <!-- 「我的」个人主页：名片卡 + 数据看板 + 成就墙 + 全功能入口 -->
-<script src="js/08-profile.js" charset="utf-8"></script>
+<script src="08-profile.js" charset="utf-8"></script>
 <!-- 首页 Bento 看板 + 今日概览/心情/待办 + 模块渲染 + 板块拖拽 + 周月报 + 成就分享卡 -->
-<script src="js/09-modules.js" charset="utf-8"></script>
+<script src="09-modules.js" charset="utf-8"></script>
 <!-- 生理期记录（数据 + 概览 + 月历标记）+ 记账功能 + 预算总览/预警 -->
-<script src="js/10-period.js" charset="utf-8"></script>
+<script src="10-period.js" charset="utf-8"></script>
 <!-- 智能研习社 + 艾宾浩斯复习曲线 + 知识库 -->
-<script src="js/11-study.js" charset="utf-8"></script>
+<script src="11-study.js" charset="utf-8"></script>
 <!-- 表单弹窗 + 各栏目投喂记录 + 标签选择器 + 天气定位与城市选择 -->
-<script src="js/12-feed.js" charset="utf-8"></script>
+<script src="12-feed.js" charset="utf-8"></script>
 <!-- 心情日记模块 + 情绪趋势统计 + 小红书链接解析 -->
-<script src="js/13-diary.js" charset="utf-8"></script>
+<script src="13-diary.js" charset="utf-8"></script>
 <!-- B 站视频学习区 + 影音汇聚台（播放器单例 / 全屏横屏）+ 映画观览厅 -->
-<script src="js/14-video.js" charset="utf-8"></script>
+<script src="14-video.js" charset="utf-8"></script>
 <!-- 启动流程 + 早安播报 / 每日复盘 / 连续打卡 / 昵称 / AI 总结 / 空闲调度 -->
-<script src="js/15-daily.js" charset="utf-8"></script>
+<script src="15-daily.js" charset="utf-8"></script>
 <!-- 清音听雨阁 + 内置轻音乐与白噪音（WebAudio 合成）+ 播放页暗色黑胶皮肤 -->
-<script src="js/16-music-core.js" charset="utf-8"></script>
+<script src="16-music-core.js" charset="utf-8"></script>
 <!-- 音乐小 App：整页沉浸主页 + 装修面板 + 头像名片 + 心愿歌单 + 播放控制 -->
-<script src="js/17-music-app.js" charset="utf-8"></script>
+<script src="17-music-app.js" charset="utf-8"></script>
 <!-- Censy Dynamic Island V4 (Jelly Glass Edition) · 已适配本项目的清音听雨阁音乐模块 -->
 <!-- 适配点：音频实例共用 window.musicAudio；数据源 musicTracks；控制调 musicToggle/Next/Prev/Like/Switch；双人头像用当前封面；主题随 html[data-theme]；永生协议只存位置/展开态 -->
 <template id="censy-island-tpl-v4">
 <!-- 尾部补丁 + wb-polish-v1（大屏适配 / 卡片入场 / 主题过渡等） -->
-<link rel="stylesheet" href="css/15-tail.css" />
+<link rel="stylesheet" href="15-tail.css" />
 <div class="cen-v4-drag-layer" id="censy-island-drag-v4">
 <div class="Cmtt-v4-visual" id="censy-island-visual-v4">
 <div class="Tt-v4-header" id="cen-v4-handle">
@@ -472,7 +472,7 @@ html[data-theme="minimal"] body::before{
 </div>
 </template>
 <!-- 尾部脚本：灵动岛交互 + 收尾初始化 -->
-<script src="js/18-tail.js" charset="utf-8"></script>
+<script src="18-tail.js" charset="utf-8"></script>
 
 </body>
 </html>

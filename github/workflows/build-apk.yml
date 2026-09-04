@@ -1,3 +1,15 @@
+# ============================================================
+#  GitHub Actions · 一键把本项目打包成 Android APK
+#  用法：
+#    1. 把这个文件随项目一起 push / 上传到 GitHub
+#    2. 仓库 → Actions → 左侧 "Build Android APK" → Run workflow
+#    3. 跑完后 → Artifacts → 下载 xiaoxiao-apk（里面是 .apk）
+#  说明：
+#    - 本项目是「平铺结构」，index.html 在仓库根目录，所以 build-folder-path 用 "."
+#    - 该 action 直接用仓库里的 HTML/CSS/JS 打一个 WebView 壳 APK，
+#      无需先部署到 GitHub Pages、无需外部 URL。
+#    - 产出的是 debug 签名 APK，可直接安装测试；要上架 Play Store 需自备签名（见 README）。
+# ============================================================
 name: Build Android APK
 
 on:
@@ -16,7 +28,7 @@ jobs:
         uses: liuhuapiaoyuan/web-to-app-action@main
         with:
           build-folder-path: "."      # 平铺结构：index.html 在根目录
-          app-name: "笑笑养成记"
+          app-name: "笑笑养成记"   # 应用显示名（手机上看到的应用标题）；若构建报名字相关错误，可临时改回英文 "XiaoXiao"
           output-folder-path: "apk"
 
       - name: 上传 APK 产物
